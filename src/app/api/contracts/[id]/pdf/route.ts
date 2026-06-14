@@ -26,10 +26,11 @@ export async function GET(
         "Content-Disposition": `inline; filename="${filename}"`,
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("[contract-pdf]", error);
     return NextResponse.json(
       { error: "Impossible de générer le PDF" },
-      { status: 404 },
+      { status: 500 },
     );
   }
 }

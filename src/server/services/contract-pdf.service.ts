@@ -1,18 +1,36 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { getContractById } from "./contract.service";
-import { formatDate, formatDateTime } from "@/lib/utils";
 
-function formatMoney(value: unknown): string {
-  if (value == null) return "—";
+/** pdf-lib StandardFonts only support WinAnsi — strip/normalize Unicode. */
+function toPdfText(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/[\u00A0\u202F]/g, " ")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, "");
+}
+
+function formatPdfDate(date: Date | string): string {
+  const d = new Date(date);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+function formatPdfDateTime(date: Date | string): string {
+  const d = new Date(date);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${formatPdfDate(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatPdfMoney(value: unknown): string {
+  if (value == null) return "-";
   const n =
     typeof value === "object" && value !== null && "toString" in value
       ? parseFloat((value as { toString: () => string }).toString())
       : Number(value);
-  if (Number.isNaN(n)) return "—";
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-  }).format(n);
+  if (Number.isNaN(n)) return "-";
+  return `${n.toFixed(2).replace(".", ",")} EUR`;
 }
 
 export async function generateContractPdf(
@@ -30,7 +48,7 @@ export async function generateContractPdf(
   let y = 800;
   const left = 50;
   const line = (text: string, bold = false, size = 10) => {
-    page.drawText(text, {
+    page.drawText(toPdfText(text), {
       x: left,
       y,
       size,
@@ -53,7 +71,7 @@ export async function generateContractPdf(
   line("Agence", true, 12);
   line(company.name);
   if (company.address) line(company.address);
-  if (company.phone) line(`Tél. ${company.phone}`);
+  if (company.phone) line(`Tel. ${company.phone}`);
   if (company.email) line(company.email);
   y -= 8;
 
@@ -61,38 +79,46 @@ export async function generateContractPdf(
   line(`${client.firstName} ${client.lastName}`);
   if (client.email) line(client.email);
   if (client.phone) line(client.phone);
-  if (client.drivingLicenseNumber) line(`Permis : ${client.drivingLicenseNumber}`);
+  if (client.drivingLicenseNumber) {
+    line(`Permis : ${client.drivingLicenseNumber}`);
+  }
   y -= 8;
 
-  line("Véhicule", true, 12);
+  line("Vehicule", true, 12);
   line(
     `${vehicle.licensePlate} — ${vehicle.make} ${vehicle.model}${vehicle.year ? ` (${vehicle.year})` : ""}`,
   );
   y -= 8;
 
-  line("Période", true, 12);
-  line(`Début : ${formatDateTime(contract.startAt)}`);
-  line(`Fin prévue : ${formatDateTime(contract.expectedEndAt)}`);
-  if (contract.actualEndAt) line(`Retour : ${formatDateTime(contract.actualEndAt)}`);
+  line("Periode", true, 12);
+  line(`Debut : ${formatPdfDateTime(contract.startAt)}`);
+  line(`Fin prevue : ${formatPdfDateTime(contract.expectedEndAt)}`);
+  if (contract.actualEndAt) {
+    line(`Retour : ${formatPdfDateTime(contract.actualEndAt)}`);
+  }
   y -= 8;
 
-  line("Conditions financières", true, 12);
-  line(`Tarif journalier : ${formatMoney(contract.dailyPrice)}`);
-  line(`Caution : ${formatMoney(contract.depositAmount)}`);
-  if (contract.includedMileage != null) line(`Km inclus : ${contract.includedMileage} km`);
+  line("Conditions financieres", true, 12);
+  line(`Tarif journalier : ${formatPdfMoney(contract.dailyPrice)}`);
+  line(`Caution : ${formatPdfMoney(contract.depositAmount)}`);
+  if (contract.includedMileage != null) {
+    line(`Km inclus : ${contract.includedMileage} km`);
+  }
   y -= 8;
 
   if (contract.startMileage != null || contract.startFuelLevel != null) {
-    line("État au départ", true, 12);
+    line("Etat au depart", true, 12);
     if (contract.startMileage != null) {
-      line(`Kilométrage : ${contract.startMileage.toLocaleString("fr-FR")} km`);
+      line(`Kilometrage : ${contract.startMileage.toLocaleString("fr-FR")} km`);
     }
-    if (contract.startFuelLevel != null) line(`Carburant : ${contract.startFuelLevel} %`);
+    if (contract.startFuelLevel != null) {
+      line(`Carburant : ${contract.startFuelLevel} %`);
+    }
     y -= 8;
   }
 
   line("Clauses", true, 12);
-  const terms = contract.terms ?? "—";
+  const terms = contract.terms ?? "-";
   const words = terms.split(/\s+/);
   let currentLine = "";
   for (const word of words) {
@@ -113,7 +139,7 @@ export async function generateContractPdf(
   y -= 30;
   line("_____________________          _____________________", false, 10);
   y -= 20;
-  line(`Document généré le ${formatDate(new Date())} — FleetRent`, false, 8);
+  line(`Document genere le ${formatPdfDate(new Date())} — FleetRent`, false, 8);
 
   const bytes = await pdfDoc.save();
   return Buffer.from(bytes);
