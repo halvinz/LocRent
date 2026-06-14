@@ -1,0 +1,294 @@
+// Prisma schema — FleetRent SaaS B2B car rental platform
+// Multi-tenant: every business entity carries companyId
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum RentalContractStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum InspectionType {
+  CHECKOUT
+  CHECKIN
+}
+
+enum FineStatus {
+  NEW
+  MATCHED
+  SENT
+  PAID
+  DISPUTED
+}
+
+// ─── Company (tenant root) ───────────────────────────────────────────────────
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  email     String?
+  phone     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users           User[]
+  clients         Client[]
+  vehicles        Vehicle[]
+  rentalContracts RentalContract[]
+  inspections     Inspection[]
+  fines           Fine[]
+  attachments     Attachment[]
+
+  @@index([slug])
+}
+
+// ─── User (auth + RBAC) ──────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  companyId    String
+  email        String
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         UserRole  @default(STAFF)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  inspections Inspection[]
+
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@index([email])
+}
+
+// ─── Client ──────────────────────────────────────────────────────────────────
+
+model Client {
+  id                     String    @id @default(cuid())
+  companyId              String
+  firstName              String
+  lastName               String
+  email                  String?
+  phone                  String?
+  address                String?
+  drivingLicenseNumber   String?
+  drivingLicenseIssuedAt DateTime?
+  drivingLicenseExpiryAt DateTime?
+  drivingLicenseFrontUrl String?
+  drivingLicenseBackUrl  String?
+  notes                  String?
+  isActive               Boolean   @default(true)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rentalContracts RentalContract[]
+
+  @@index([companyId])
+  @@index([companyId, isActive])
+  @@index([companyId, lastName, firstName])
+  @@index([companyId, drivingLicenseNumber])
+}
+
+// ─── Vehicle ─────────────────────────────────────────────────────────────────
+
+model Vehicle {
+  id                 String        @id @default(cuid())
+  companyId          String
+  licensePlate       String
+  make               String
+  model              String
+  trim               String?
+  year               Int?
+  vin                String?
+  currentMileage     Int?
+  fuelType           String?
+  transmission       String?
+  color              String?
+  status             VehicleStatus @default(AVAILABLE)
+  registrationExpiry DateTime?
+  insuranceExpiry    DateTime?
+  notes              String?
+  isActive           Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rentalContracts RentalContract[]
+  inspections     Inspection[]
+  fines           Fine[]
+
+  @@unique([companyId, licensePlate])
+  @@index([companyId])
+  @@index([companyId, isActive])
+  @@index([companyId, status])
+  @@index([companyId, licensePlate])
+}
+
+// ─── RentalContract ──────────────────────────────────────────────────────────
+
+model RentalContract {
+  id                    String               @id @default(cuid())
+  companyId             String
+  clientId              String
+  vehicleId             String
+  contractNumber        String?
+  status                RentalContractStatus @default(DRAFT)
+  startAt               DateTime
+  expectedEndAt         DateTime
+  actualEndAt           DateTime?
+  dailyPrice            Decimal?             @db.Decimal(10, 2)
+  depositAmount         Decimal?             @db.Decimal(10, 2)
+  includedMileage       Int?
+  extraMileagePrice     Decimal?             @db.Decimal(10, 2)
+  startMileage          Int?
+  expectedReturnMileage Int?
+  endMileage            Int?
+  startFuelLevel        Int?
+  endFuelLevel          Int?
+  terms                 String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  vehicle     Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  inspections Inspection[]
+  fines       Fine[]
+  attachments Attachment[]
+
+  @@unique([companyId, contractNumber])
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([companyId, vehicleId, startAt, expectedEndAt])
+  @@index([companyId, clientId])
+  @@index([companyId, startAt])
+}
+
+// ─── Inspection (état des lieux départ / retour) ─────────────────────────────
+
+model Inspection {
+  id               String         @id @default(cuid())
+  companyId        String
+  rentalContractId String
+  vehicleId        String
+  createdById      String?
+  type             InspectionType
+  performedAt      DateTime       @default(now())
+  mileage          Int?
+  fuelLevel        Int?
+  notes            String?
+  damageSummary    String?
+  checklist        Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  company        Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rentalContract RentalContract    @relation(fields: [rentalContractId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  createdBy      User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  photos         InspectionPhoto[]
+
+  @@unique([rentalContractId, type])
+  @@index([companyId])
+  @@index([rentalContractId])
+  @@index([vehicleId])
+}
+
+model InspectionPhoto {
+  id           String   @id @default(cuid())
+  companyId    String
+  inspectionId String
+  url          String
+  caption      String?
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  inspection Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@index([companyId])
+}
+
+// ─── Fine (amende) ───────────────────────────────────────────────────────────
+
+model Fine {
+  id               String     @id @default(cuid())
+  companyId        String
+  vehicleId        String?
+  rentalContractId String?
+  licensePlate     String
+  violationAt      DateTime
+  violationType    String?
+  amount           Decimal    @db.Decimal(10, 2)
+  referenceNumber  String?
+  issuingAuthority String?
+  status           FineStatus @default(NEW)
+  matchedAt        DateTime?
+  notes            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle?        @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  rentalContract RentalContract? @relation(fields: [rentalContractId], references: [id], onDelete: SetNull)
+  attachments    Attachment[]
+
+  @@index([companyId])
+  @@index([companyId, licensePlate, violationAt])
+  @@index([companyId, status])
+  @@index([rentalContractId])
+}
+
+// ─── Attachment ──────────────────────────────────────────────────────────────
+
+model Attachment {
+  id               String   @id @default(cuid())
+  companyId        String
+  rentalContractId String?
+  fineId           String?
+  fileName         String
+  fileUrl          String
+  mimeType         String?
+  sizeBytes        Int?
+  createdAt        DateTime @default(now())
+
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rentalContract RentalContract? @relation(fields: [rentalContractId], references: [id], onDelete: Cascade)
+  fine           Fine?           @relation(fields: [fineId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([rentalContractId])
+  @@index([fineId])
+}
