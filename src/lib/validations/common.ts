@@ -20,27 +20,64 @@ export function optionalDateString(value: string | undefined): Date | undefined 
   return date;
 }
 
-/** Parse datetime-local / ISO strings; returns undefined if invalid. */
+/** Parse datetime-local, ISO, or dd/MM/yyyy HH:mm strings. */
 export function parseDateTimeString(value: string | undefined): Date | undefined {
-  return optionalDateString(value);
+  if (!value || value.trim() === "") return undefined;
+
+  const trimmed = value.trim();
+  const iso = new Date(trimmed);
+  if (!Number.isNaN(iso.getTime())) return iso;
+
+  const frMatch = trimmed.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/,
+  );
+  if (frMatch) {
+    const [, day, month, year, hour = "0", minute = "0"] = frMatch;
+    const d = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+    );
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+
+  return undefined;
 }
 
 export function createRequiredDateTimeSchema(label: string) {
-  return z
-    .string()
-    .trim()
-    .min(1, `${label} requise`)
-    .transform((value, ctx) => {
-      const date = parseDateTimeString(value);
-      if (!date) {
+  return z.union([z.string(), z.date()]).transform((value, ctx) => {
+    if (value instanceof Date) {
+      if (Number.isNaN(value.getTime())) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `${label} invalide`,
         });
         return z.NEVER;
       }
-      return date;
-    });
+      return value;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${label} requise`,
+      });
+      return z.NEVER;
+    }
+
+    const date = parseDateTimeString(trimmed);
+    if (!date) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${label} invalide`,
+      });
+      return z.NEVER;
+    }
+    return date;
+  });
 }
 
 export const optionalUrlSchema = z
