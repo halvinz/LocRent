@@ -121,16 +121,26 @@ export function InspectionComparison({
                   </div>
                 )}
                 {inspection.photos.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {inspection.photos.map((p, idx) => (
                       <a
                         key={idx}
                         href={p.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-primary underline-offset-4 hover:underline"
+                        className="group block overflow-hidden rounded-md border"
                       >
-                        {p.caption ?? `Photo ${idx + 1}`}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={p.url}
+                          alt={p.caption ?? `Photo ${idx + 1}`}
+                          className="aspect-[4/3] w-full object-cover transition-opacity group-hover:opacity-90"
+                        />
+                        {p.caption && (
+                          <p className="truncate px-2 py-1 text-xs text-muted-foreground">
+                            {p.caption}
+                          </p>
+                        )}
                       </a>
                     ))}
                   </div>

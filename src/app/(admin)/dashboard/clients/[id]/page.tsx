@@ -135,20 +135,38 @@ export default async function ClientDetailPage({
               </p>
             </div>
             {(client.drivingLicenseFrontUrl || client.drivingLicenseBackUrl) && (
-              <div className="flex gap-2 pt-2">
+              <div className="grid gap-3 pt-2 sm:grid-cols-2">
                 {client.drivingLicenseFrontUrl && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={client.drivingLicenseFrontUrl} target="_blank" rel="noreferrer">
-                      Recto
-                    </a>
-                  </Button>
+                  <a
+                    href={client.drivingLicenseFrontUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden rounded-md border"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={client.drivingLicenseFrontUrl}
+                      alt="Permis recto"
+                      className="aspect-[4/3] w-full object-contain bg-muted"
+                    />
+                    <p className="px-2 py-1 text-xs text-muted-foreground">Recto</p>
+                  </a>
                 )}
                 {client.drivingLicenseBackUrl && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={client.drivingLicenseBackUrl} target="_blank" rel="noreferrer">
-                      Verso
-                    </a>
-                  </Button>
+                  <a
+                    href={client.drivingLicenseBackUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden rounded-md border"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={client.drivingLicenseBackUrl}
+                      alt="Permis verso"
+                      className="aspect-[4/3] w-full object-contain bg-muted"
+                    />
+                    <p className="px-2 py-1 text-xs text-muted-foreground">Verso</p>
+                  </a>
                 )}
               </div>
             )}

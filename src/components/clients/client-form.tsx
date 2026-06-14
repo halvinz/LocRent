@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import {
   clientFormSchema,
@@ -11,6 +11,7 @@ import {
   createClientAndRedirectAction,
   updateClientAndRedirectAction,
 } from "@/server/actions/client.actions";
+import { ImageUploadField } from "@/components/shared/image-upload-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,6 +70,7 @@ export function ClientForm({ mode, clientId, defaultValues }: ClientFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
     setError,
   } = useForm<ClientFormValues>({
@@ -173,20 +175,32 @@ export function ClientForm({ mode, clientId, defaultValues }: ClientFormProps) {
             <Label htmlFor="drivingLicenseExpiryAt">Date d&apos;expiration</Label>
             <Input id="drivingLicenseExpiryAt" type="date" {...register("drivingLicenseExpiryAt")} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="drivingLicenseFrontUrl">URL permis (recto)</Label>
-            <Input id="drivingLicenseFrontUrl" {...register("drivingLicenseFrontUrl")} />
-            {errors.drivingLicenseFrontUrl && (
-              <p className="text-sm text-destructive">{errors.drivingLicenseFrontUrl.message}</p>
+          <Controller
+            name="drivingLicenseFrontUrl"
+            control={control}
+            render={({ field }) => (
+              <ImageUploadField
+                label="Photo permis (recto)"
+                value={field.value}
+                onChange={field.onChange}
+                folder="licenses"
+                error={errors.drivingLicenseFrontUrl?.message}
+              />
             )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="drivingLicenseBackUrl">URL permis (verso)</Label>
-            <Input id="drivingLicenseBackUrl" {...register("drivingLicenseBackUrl")} />
-            {errors.drivingLicenseBackUrl && (
-              <p className="text-sm text-destructive">{errors.drivingLicenseBackUrl.message}</p>
+          />
+          <Controller
+            name="drivingLicenseBackUrl"
+            control={control}
+            render={({ field }) => (
+              <ImageUploadField
+                label="Photo permis (verso)"
+                value={field.value}
+                onChange={field.onChange}
+                folder="licenses"
+                error={errors.drivingLicenseBackUrl?.message}
+              />
             )}
-          </div>
+          />
         </CardContent>
       </Card>
 

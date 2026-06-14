@@ -3,7 +3,6 @@
 import { useFieldArray, useForm, Controller } from "react-hook-form";
 import { InspectionType } from "@prisma/client";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
 import {
   INSPECTION_CHECKLIST_ITEMS,
   CHECKLIST_STATUS_OPTIONS,
@@ -15,6 +14,7 @@ import {
   saveCheckoutAction,
   saveCheckinAction,
 } from "@/server/actions/inspection.actions";
+import { PhotoUploadList } from "@/components/shared/image-upload-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,14 +67,9 @@ export function InspectionForm({
         notes: defaultValues?.notes ?? "",
         damageSummary: defaultValues?.damageSummary ?? "",
         checklist: defaultValues?.checklist ?? {},
-        photos: defaultValues?.photos ?? [{ url: "", caption: "" }],
+        photos: defaultValues?.photos ?? [],
       },
     });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "photos",
-  });
 
   async function onSubmit(data: InspectionFormValues) {
     const filteredPhotos = data.photos.filter((p) => p.url.trim() !== "");
@@ -88,7 +83,7 @@ export function InspectionForm({
       return;
     }
 
-    const result = await saveAction(contractId, parsed.data);
+    const result = await saveAction(contractId, data);
     if (!result) return;
     if (result.success) {
       toast.success(`État des lieux ${INSPECTION_TYPE_LABELS[type]} enregistré`);
@@ -168,38 +163,24 @@ export function InspectionForm({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle>Photos</CardTitle>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => append({ url: "", caption: "" })}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Ajouter
-          </Button>
+          <CardDescription>
+            Joignez plusieurs photos depuis votre ordinateur ou votre téléphone
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex gap-2">
-              <Input
-                placeholder="URL de la photo"
-                {...register(`photos.${index}.url`)}
-                className="flex-1"
+        <CardContent>
+          <Controller
+            name="photos"
+            control={control}
+            render={({ field }) => (
+              <PhotoUploadList
+                photos={field.value}
+                onChange={field.onChange}
+                folder="inspections"
               />
-              <Input
-                placeholder="Légende"
-                {...register(`photos.${index}.caption`)}
-                className="w-40"
-              />
-              {fields.length > 1 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
+            )}
+          />
         </CardContent>
       </Card>
 

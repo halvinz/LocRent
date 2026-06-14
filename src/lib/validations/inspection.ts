@@ -58,7 +58,7 @@ export const inspectionFormSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? undefined : v)),
   checklist: checklistSchema,
-  photos: z.array(photoSchema).max(10).default([]),
+  photos: z.array(photoSchema).max(20).default([]),
 });
 
 export type InspectionFormInput = z.input<typeof inspectionFormSchema>;
