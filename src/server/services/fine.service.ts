@@ -1,7 +1,7 @@
 import { FineStatus, type Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { normalizeLicensePlate } from "@/config/fines";
-import { NotFoundError, ValidationError } from "@/lib/errors";
+import { NotFoundError, ValidationError, ConflictError } from "@/lib/errors";
 import type { FineFormOutput, FineSearchInput } from "@/lib/validations/fine";
 import { findResponsibleRenterForFine } from "./fine-matching.service";
 
@@ -157,6 +157,18 @@ export async function updateFineStatus(
     data: { status },
     include: fineInclude,
   });
+}
+
+export async function deleteFine(companyId: string, fineId: string) {
+  const fine = await getFineById(companyId, fineId);
+
+  if (fine.status === FineStatus.PAID) {
+    throw new ConflictError(
+      "Une amende payée ne peut pas être supprimée (historique comptable)",
+    );
+  }
+
+  await prisma.fine.delete({ where: { id: fineId } });
 }
 
 export async function getDashboardFineStats(companyId: string) {

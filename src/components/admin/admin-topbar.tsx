@@ -26,20 +26,23 @@ interface AdminTopbarProps {
   };
   companyName: string;
   onMenuClick?: () => void;
+  mobileNavOpen?: boolean;
 }
 
-export function AdminTopbar({ user, companyName, onMenuClick }: AdminTopbarProps) {
+export function AdminTopbar({ user, companyName, onMenuClick, mobileNavOpen }: AdminTopbarProps) {
   const initials = getInitials(user.firstName, user.lastName);
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background px-4 sm:h-16 sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
         <Button
+          type="button"
           variant="ghost"
           size="icon"
-          className="shrink-0 lg:hidden"
-          onClick={onMenuClick}
-          aria-label="Ouvrir le menu"
+          className="h-11 w-11 shrink-0 touch-manipulation lg:hidden"
+          onClick={() => onMenuClick?.()}
+          aria-label={mobileNavOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={mobileNavOpen ?? false}
         >
           <Menu className="h-5 w-5" />
         </Button>

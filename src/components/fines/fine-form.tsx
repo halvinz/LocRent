@@ -110,12 +110,20 @@ export function FineForm() {
   async function onSubmit(data: FineFormValues) {
     const parsed = fineFormSchema.safeParse(data);
     if (!parsed.success) {
-      const first = parsed.error.errors[0];
-      toast.error(first?.message ?? "Formulaire invalide");
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0]?.toString();
+        if (field) {
+          setError(field as keyof FineFormValues, { message: issue.message });
+        }
+      }
+      toast.error(
+        parsed.error.issues[0]?.message ?? "Veuillez corriger les erreurs",
+      );
       return;
     }
 
-    const result = await createFineAndRedirectAction(parsed.data);
+    const result = await createFineAndRedirectAction(data);
+    if (!result) return;
     if (!result.success) {
       setError("root", { message: result.error });
       toast.error(result.error);
@@ -220,6 +228,9 @@ export function FineForm() {
               placeholder="135.00"
               {...register("amount", { required: true })}
             />
+            {errors.amount && (
+              <p className="text-sm text-destructive">{errors.amount.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -95,7 +95,11 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
         </div>
       </div>
 
-      <ContractActions contractId={contract.id} status={contract.status} />
+      <ContractActions
+        contractId={contract.id}
+        status={contract.status}
+        contractNumber={contract.contractNumber}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

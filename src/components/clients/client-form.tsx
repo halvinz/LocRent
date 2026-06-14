@@ -93,6 +93,8 @@ export function ClientForm({ mode, clientId, defaultValues }: ClientFormProps) {
         ? await createClientAndRedirectAction(parsed.data)
         : await updateClientAndRedirectAction(clientId!, parsed.data);
 
+    if (!result) return;
+
     if (result.success) {
       toast.success(
         mode === "create" ? "Client créé avec succès" : "Client mis à jour",

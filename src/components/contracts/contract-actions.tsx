@@ -8,7 +8,9 @@ import {
   activateContractAction,
   cancelContractAction,
   completeContractAction,
+  deleteContractAction,
 } from "@/server/actions/contract.actions";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,9 +29,14 @@ import {
 interface ContractActionsProps {
   contractId: string;
   status: RentalContractStatus;
+  contractNumber?: string | null;
 }
 
-export function ContractActions({ contractId, status }: ContractActionsProps) {
+export function ContractActions({
+  contractId,
+  status,
+  contractNumber,
+}: ContractActionsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [actualEndAt, setActualEndAt] = useState("");
@@ -52,6 +59,17 @@ export function ContractActions({ contractId, status }: ContractActionsProps) {
     setLoading(false);
     if (result.success) {
       toast.success("Contrat annulé");
+      router.refresh();
+    } else toast.error(result.error ?? "Erreur");
+  }
+
+  async function handleDelete() {
+    setLoading(true);
+    const result = await deleteContractAction(contractId);
+    setLoading(false);
+    if (result.success) {
+      toast.success("Contrat supprimé");
+      router.push("/dashboard/contracts");
       router.refresh();
     } else toast.error(result.error ?? "Erreur");
   }
@@ -130,24 +148,54 @@ export function ContractActions({ contractId, status }: ContractActionsProps) {
         status === RentalContractStatus.ACTIVE) && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={loading}>
-              Annuler
+            <Button variant="outline" disabled={loading}>
+              Annuler le contrat
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Annuler ce contrat ?</AlertDialogTitle>
               <AlertDialogDescription>
-                Cette action est irréversible. Le véhicule redeviendra disponible si le contrat était actif.
+                Le contrat passera en statut annulé. Le véhicule redeviendra
+                disponible si le contrat était actif.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Non</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCancel}>
+                Confirmer l&apos;annulation
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {(status === RentalContractStatus.DRAFT ||
+        status === RentalContractStatus.CANCELLED) && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" disabled={loading}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Supprimer ce contrat ?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Le contrat{" "}
+                <strong>{contractNumber ?? "sans numéro"}</strong> sera
+                définitivement supprimé avec ses états des lieux. Cette action
+                est irréversible.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleCancel}
+                onClick={handleDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                Confirmer
+                Supprimer
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

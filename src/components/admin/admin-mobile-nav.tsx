@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import { X, Car } from "lucide-react";
@@ -24,6 +24,7 @@ export function AdminMobileNav({
   companyName,
 }: AdminMobileNavProps) {
   const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
 
   useEffect(() => {
     if (!open) return;
@@ -34,15 +35,19 @@ export function AdminMobileNav({
     };
   }, [open]);
 
+  // Fermer uniquement quand la route change (pas à l'ouverture du menu)
   useEffect(() => {
-    if (open) onClose();
-  }, [pathname, open, onClose]);
+    if (pathnameRef.current !== pathname) {
+      pathnameRef.current = pathname;
+      onClose();
+    }
+  }, [pathname, onClose]);
 
   return (
     <>
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/50 transition-opacity md:hidden",
+          "fixed inset-0 z-40 bg-black/50 transition-opacity lg:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={onClose}
@@ -50,10 +55,12 @@ export function AdminMobileNav({
       />
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(100vw-3rem,18rem)] flex-col border-r bg-sidebar text-sidebar-foreground shadow-xl transition-transform duration-200 ease-out md:hidden",
-          open ? "translate-x-0" : "-translate-x-full",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(100vw-3rem,18rem)] flex-col border-r bg-sidebar text-sidebar-foreground shadow-xl transition-transform duration-200 ease-out lg:hidden",
+          open ? "translate-x-0" : "pointer-events-none -translate-x-full",
         )}
         aria-hidden={!open}
+        aria-modal={open}
+        role="dialog"
       >
         <div className="flex h-16 items-center justify-between gap-2 border-b border-sidebar-border px-4">
           <div className="flex min-w-0 items-center gap-2">
@@ -68,6 +75,7 @@ export function AdminMobileNav({
             </div>
           </div>
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             className="shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"

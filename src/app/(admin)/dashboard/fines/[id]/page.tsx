@@ -7,6 +7,7 @@ import { getFineById } from "@/server/services/fine.service";
 import { FineStatusBadge } from "@/components/fines/fine-status-badge";
 import { FineMatchTimeline } from "@/components/fines/fine-match-timeline";
 import { FineDetailActions } from "@/components/fines/fine-detail-actions";
+import { FineActions } from "@/components/fines/fine-actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -71,6 +72,11 @@ export default async function FineDetailPage({ params }: FineDetailPageProps) {
             </p>
           </div>
         </div>
+        <FineActions
+          fineId={fine.id}
+          licensePlate={fine.licensePlate}
+          status={fine.status}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

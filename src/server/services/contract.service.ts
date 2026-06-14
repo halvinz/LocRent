@@ -364,6 +364,21 @@ export async function cancelContract(companyId: string, id: string) {
   });
 }
 
+export async function deleteContract(companyId: string, id: string) {
+  const contract = await getContractById(companyId, id);
+
+  if (
+    contract.status !== RentalContractStatus.DRAFT &&
+    contract.status !== RentalContractStatus.CANCELLED
+  ) {
+    throw new ConflictError(
+      "Seuls les brouillons et contrats annulés peuvent être supprimés",
+    );
+  }
+
+  await prisma.rentalContract.delete({ where: { id } });
+}
+
 export async function getContractFormOptions(companyId: string) {
   const [clients, vehicles] = await Promise.all([
     prisma.client.findMany({

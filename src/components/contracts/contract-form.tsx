@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { VehicleStatus } from "@prisma/client";
 import { contractFormSchema } from "@/lib/validations/contract";
 import { DEFAULT_CONTRACT_TERMS } from "@/config/inspection";
-import { formatDateForInput } from "@/lib/utils";
 import {
   createContractAndRedirectAction,
   updateContractAndRedirectAction,
@@ -116,8 +115,11 @@ export function ContractForm({
 
     const result =
       mode === "create"
-        ? await createContractAndRedirectAction(parsed.data)
-        : await updateContractAndRedirectAction(contractId!, parsed.data);
+        ? await createContractAndRedirectAction(data)
+        : await updateContractAndRedirectAction(contractId!, data);
+
+    // redirect() ne renvoie pas de valeur côté client — le contrat est déjà créé
+    if (!result) return;
 
     if (result.success) {
       toast.success(mode === "create" ? "Contrat créé" : "Contrat mis à jour");
@@ -204,12 +206,48 @@ export function ContractForm({
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="startAt">Début *</Label>
-            <Input id="startAt" type="datetime-local" {...register("startAt")} />
+            <Controller
+              name="startAt"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="startAt"
+                  type="datetime-local"
+                  value={
+                    typeof field.value === "string"
+                      ? field.value
+                      : toDatetimeLocalValue(field.value as Date | string)
+                  }
+                  onChange={(e) => field.onChange(e.target.value)}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                />
+              )}
+            />
             {errors.startAt && <p className="text-sm text-destructive">{errors.startAt.message}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="expectedEndAt">Fin prévue *</Label>
-            <Input id="expectedEndAt" type="datetime-local" {...register("expectedEndAt")} />
+            <Controller
+              name="expectedEndAt"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="expectedEndAt"
+                  type="datetime-local"
+                  value={
+                    typeof field.value === "string"
+                      ? field.value
+                      : toDatetimeLocalValue(field.value as Date | string)
+                  }
+                  onChange={(e) => field.onChange(e.target.value)}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                />
+              )}
+            />
             {errors.expectedEndAt && <p className="text-sm text-destructive">{errors.expectedEndAt.message}</p>}
           </div>
         </CardContent>

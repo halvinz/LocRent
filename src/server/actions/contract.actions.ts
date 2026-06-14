@@ -10,6 +10,7 @@ import {
   cancelContract,
   completeContract,
   createContract,
+  deleteContract,
   updateContract,
 } from "@/server/services/contract.service";
 import type { ActionResult } from "@/types/auth";
@@ -85,6 +86,20 @@ export async function cancelContractAction(
     revalidatePath(BASE);
     revalidatePath(`${BASE}/${id}`);
     return toActionSuccess({ id });
+  } catch (error) {
+    return toActionResult(error);
+  }
+}
+
+export async function deleteContractAction(
+  id: string,
+): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireAuth();
+    await deleteContract(companyId, id);
+    revalidatePath(BASE);
+    revalidatePath("/dashboard");
+    return toActionSuccess(undefined);
   } catch (error) {
     return toActionResult(error);
   }

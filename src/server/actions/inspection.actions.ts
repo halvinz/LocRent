@@ -28,6 +28,7 @@ export async function saveInspectionAction(
     revalidatePath(basePath(contractId));
     revalidatePath(`${basePath(contractId)}/checkout`);
     revalidatePath(`${basePath(contractId)}/checkin`);
+    revalidatePath("/dashboard/inspections");
 
     if (!inspection) {
       return toActionResult(new Error("Erreur lors de l'enregistrement"));

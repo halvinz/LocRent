@@ -12,6 +12,7 @@ import {
 import { toActionResult, toActionSuccess } from "@/lib/actions/utils";
 import {
   createFine,
+  deleteFine,
   linkFineToContract,
   matchFinePreview,
   updateFineStatus,
@@ -100,4 +101,16 @@ export async function createFineAndRedirectAction(
     redirect(`${BASE}/${result.data.id}`);
   }
   return result;
+}
+
+export async function deleteFineAction(id: string): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireAuth();
+    await deleteFine(companyId, id);
+    revalidatePath(BASE);
+    revalidatePath("/dashboard");
+    return toActionSuccess(undefined);
+  } catch (error) {
+    return toActionResult(error);
+  }
 }

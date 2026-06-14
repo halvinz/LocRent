@@ -89,6 +89,7 @@ export function InspectionForm({
     }
 
     const result = await saveAction(contractId, parsed.data);
+    if (!result) return;
     if (result.success) {
       toast.success(`État des lieux ${INSPECTION_TYPE_LABELS[type]} enregistré`);
       return;

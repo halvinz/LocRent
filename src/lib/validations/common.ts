@@ -46,38 +46,25 @@ export function parseDateTimeString(value: string | undefined): Date | undefined
   return undefined;
 }
 
+/** Normalize form / server-action values to Date (accepts string, Date, ISO). */
+export function normalizeToDate(value: unknown): Date | undefined {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? undefined : value;
+  }
+  if (typeof value === "string") {
+    return parseDateTimeString(value);
+  }
+  return undefined;
+}
+
 export function createRequiredDateTimeSchema(label: string) {
-  return z.union([z.string(), z.date()]).transform((value, ctx) => {
-    if (value instanceof Date) {
-      if (Number.isNaN(value.getTime())) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${label} invalide`,
-        });
-        return z.NEVER;
-      }
-      return value;
-    }
-
-    const trimmed = value.trim();
-    if (!trimmed) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `${label} requise`,
-      });
-      return z.NEVER;
-    }
-
-    const date = parseDateTimeString(trimmed);
-    if (!date) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `${label} invalide`,
-      });
-      return z.NEVER;
-    }
-    return date;
-  });
+  return z.preprocess(
+    normalizeToDate,
+    z.date({
+      required_error: `${label} requise`,
+      invalid_type_error: `${label} invalide`,
+    }),
+  );
 }
 
 export const optionalUrlSchema = z

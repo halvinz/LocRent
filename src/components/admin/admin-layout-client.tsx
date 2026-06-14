@@ -38,7 +38,8 @@ export function AdminLayoutClient({
         <AdminTopbar
           user={user}
           companyName={companyName}
-          onMenuClick={() => setMobileNavOpen(true)}
+          mobileNavOpen={mobileNavOpen}
+          onMenuClick={() => setMobileNavOpen((prev) => !prev)}
         />
         <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
       </div>

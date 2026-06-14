@@ -106,6 +106,8 @@ export function VehicleForm({ mode, vehicleId, defaultValues }: VehicleFormProps
         ? await createVehicleAndRedirectAction(parsed.data)
         : await updateVehicleAndRedirectAction(vehicleId!, parsed.data);
 
+    if (!result) return;
+
     if (result.success) {
       toast.success(
         mode === "create" ? "Véhicule créé avec succès" : "Véhicule mis à jour",

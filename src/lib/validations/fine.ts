@@ -1,17 +1,40 @@
 import { z } from "zod";
 import { FineStatus } from "@prisma/client";
 import { VIOLATION_TYPES } from "@/config/fines";
-import { optionalDateString } from "./common";
+import { createRequiredDateTimeSchema, emptyToUndefined } from "./common";
 
-const optionalDecimal = z
-  .union([z.string(), z.number()])
+function emptyNumberToUndefined(value: unknown): unknown {
+  if (value === null || value === undefined || value === "") return undefined;
+  return value;
+}
+
+const requiredAmount = z.preprocess(
+  emptyNumberToUndefined,
+  z
+    .union([z.string(), z.number()])
+    .transform((v) => {
+      if (v === undefined) throw new Error("Montant requis");
+      const n =
+        typeof v === "number" ? v : parseFloat(String(v).replace(",", "."));
+      if (Number.isNaN(n)) throw new Error("Montant requis");
+      return n;
+    })
+    .pipe(
+      z
+        .number({ invalid_type_error: "Montant invalide" })
+        .positive("Montant invalide"),
+    ),
+);
+
+const optionalViolationType = z.preprocess(
+  (v) => (v === "" || v === undefined ? undefined : v),
+  z.enum(VIOLATION_TYPES).optional(),
+);
+
+const optionalId = z
+  .string()
   .optional()
-  .transform((v) => {
-    if (v === undefined || v === "") return undefined;
-    const n = typeof v === "number" ? v : parseFloat(String(v).replace(",", "."));
-    return Number.isNaN(n) ? undefined : n;
-  })
-  .pipe(z.number().positive("Montant invalide"));
+  .transform((v) => emptyToUndefined(v));
 
 export const fineMatchSchema = z.object({
   licensePlate: z
@@ -19,14 +42,7 @@ export const fineMatchSchema = z.object({
     .trim()
     .min(1, "Plaque requise")
     .max(20),
-  violationAt: z
-    .string()
-    .min(1, "Date/heure requise")
-    .transform((v) => {
-      const d = optionalDateString(v);
-      if (!d) throw new Error("Date/heure invalide");
-      return d;
-    }),
+  violationAt: createRequiredDateTimeSchema("Date/heure de l'infraction"),
 });
 
 export type FineMatchInput = z.infer<typeof fineMatchSchema>;
@@ -37,46 +53,29 @@ export const fineFormSchema = z.object({
     .trim()
     .min(1, "Plaque requise")
     .max(20),
-  violationAt: z
-    .string()
-    .min(1, "Date/heure requise")
-    .transform((v) => {
-      const d = optionalDateString(v);
-      if (!d) throw new Error("Date/heure invalide");
-      return d;
-    }),
-  violationType: z
-    .enum(VIOLATION_TYPES)
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
-  amount: z
-    .union([z.string(), z.number()])
-    .transform((v) => {
-      const n = typeof v === "number" ? v : parseFloat(String(v).replace(",", "."));
-      if (Number.isNaN(n)) throw new Error("Montant requis");
-      return n;
-    })
-    .pipe(z.number().positive("Montant invalide")),
+  violationAt: createRequiredDateTimeSchema("Date/heure de l'infraction"),
+  violationType: optionalViolationType,
+  amount: requiredAmount,
   referenceNumber: z
     .string()
     .trim()
     .max(100)
     .optional()
-    .transform((v) => (v === "" ? undefined : v)),
+    .transform((v) => emptyToUndefined(v)),
   issuingAuthority: z
     .string()
     .trim()
     .max(200)
     .optional()
-    .transform((v) => (v === "" ? undefined : v)),
+    .transform((v) => emptyToUndefined(v)),
   notes: z
     .string()
     .trim()
     .max(2000)
     .optional()
-    .transform((v) => (v === "" ? undefined : v)),
-  rentalContractId: z.string().optional(),
-  vehicleId: z.string().optional(),
+    .transform((v) => emptyToUndefined(v)),
+  rentalContractId: optionalId,
+  vehicleId: optionalId,
 });
 
 export type FineFormInput = z.input<typeof fineFormSchema>;

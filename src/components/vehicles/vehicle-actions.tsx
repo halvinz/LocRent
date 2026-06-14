@@ -41,7 +41,7 @@ export function VehicleActions({
     setLoading(false);
 
     if (result.success) {
-      toast.success("Véhicule archivé");
+      toast.success("Véhicule supprimé");
       router.push("/dashboard/vehicles");
       router.refresh();
     } else {
@@ -76,15 +76,16 @@ export function VehicleActions({
       <AlertDialogTrigger asChild>
         <Button variant="destructive" disabled={loading}>
           <Trash2 className="mr-2 h-4 w-4" />
-          Archiver
+          Supprimer
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Archiver ce véhicule ?</AlertDialogTitle>
+          <AlertDialogTitle>Supprimer ce véhicule ?</AlertDialogTitle>
           <AlertDialogDescription>
-            Le véhicule <strong>{label}</strong> sera masqué du parc actif.
-            Son historique de contrats sera conservé.
+            Le véhicule <strong>{label}</strong> sera retiré du parc actif.
+            Son historique de contrats sera conservé. Vous pourrez le restaurer
+            depuis la liste des véhicules archivés.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -93,7 +94,7 @@ export function VehicleActions({
             onClick={handleDelete}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Archiver
+            Supprimer
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

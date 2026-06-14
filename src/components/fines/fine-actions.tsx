@@ -2,12 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FineStatus } from "@prisma/client";
 import { toast } from "sonner";
-import { Trash2, RotateCcw } from "lucide-react";
-import {
-  deleteClientAction,
-  restoreClientAction,
-} from "@/server/actions/client.actions";
+import { Trash2 } from "lucide-react";
+import { deleteFineAction } from "@/server/actions/fine.actions";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -21,54 +19,36 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface ClientActionsProps {
-  clientId: string;
-  isActive: boolean;
-  clientName: string;
+interface FineActionsProps {
+  fineId: string;
+  licensePlate: string;
+  status: FineStatus;
 }
 
-export function ClientActions({
-  clientId,
-  isActive,
-  clientName,
-}: ClientActionsProps) {
+export function FineActions({
+  fineId,
+  licensePlate,
+  status,
+}: FineActionsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  if (status === FineStatus.PAID) {
+    return null;
+  }
+
   async function handleDelete() {
     setLoading(true);
-    const result = await deleteClientAction(clientId);
+    const result = await deleteFineAction(fineId);
     setLoading(false);
 
     if (result.success) {
-      toast.success("Client supprimé");
-      router.push("/dashboard/clients");
+      toast.success("Amende supprimée");
+      router.push("/dashboard/fines");
       router.refresh();
     } else {
       toast.error(result.error ?? "Erreur lors de la suppression");
     }
-  }
-
-  async function handleRestore() {
-    setLoading(true);
-    const result = await restoreClientAction(clientId);
-    setLoading(false);
-
-    if (result.success) {
-      toast.success("Client restauré");
-      router.refresh();
-    } else {
-      toast.error(result.error ?? "Erreur lors de la restauration");
-    }
-  }
-
-  if (!isActive) {
-    return (
-      <Button variant="outline" onClick={handleRestore} disabled={loading}>
-        <RotateCcw className="mr-2 h-4 w-4" />
-        Restaurer
-      </Button>
-    );
   }
 
   return (
@@ -81,11 +61,10 @@ export function ClientActions({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer ce client ?</AlertDialogTitle>
+          <AlertDialogTitle>Supprimer cette amende ?</AlertDialogTitle>
           <AlertDialogDescription>
-            Le client <strong>{clientName}</strong> sera retiré de la liste
-            active. Ses contrats existants seront conservés. Vous pourrez le
-            restaurer depuis la liste des clients archivés.
+            L&apos;amende pour la plaque <strong>{licensePlate}</strong> sera
+            définitivement supprimée. Cette action est irréversible.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

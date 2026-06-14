@@ -123,3 +123,69 @@ export async function getInspection(
   if (!inspection) throw new NotFoundError("État des lieux introuvable");
   return inspection;
 }
+
+export async function getInspectionsOverview(companyId: string) {
+  const [contracts, recentInspections] = await Promise.all([
+    prisma.rentalContract.findMany({
+      where: {
+        companyId,
+        status: {
+          in: [RentalContractStatus.DRAFT, RentalContractStatus.ACTIVE],
+        },
+      },
+      orderBy: { startAt: "desc" },
+      include: {
+        client: { select: { firstName: true, lastName: true } },
+        vehicle: {
+          select: { licensePlate: true, make: true, model: true },
+        },
+        inspections: {
+          select: { type: true, performedAt: true },
+        },
+      },
+    }),
+    prisma.inspection.findMany({
+      where: { companyId },
+      orderBy: { performedAt: "desc" },
+      take: 10,
+      include: {
+        rentalContract: {
+          select: {
+            id: true,
+            contractNumber: true,
+            client: { select: { firstName: true, lastName: true } },
+            vehicle: { select: { licensePlate: true } },
+          },
+        },
+      },
+    }),
+  ]);
+
+  const queue = contracts.map((contract) => {
+    const hasCheckout = contract.inspections.some(
+      (i) => i.type === InspectionType.CHECKOUT,
+    );
+    const hasCheckin = contract.inspections.some(
+      (i) => i.type === InspectionType.CHECKIN,
+    );
+
+    return {
+      id: contract.id,
+      contractNumber: contract.contractNumber,
+      status: contract.status,
+      startAt: contract.startAt,
+      clientName: `${contract.client.lastName} ${contract.client.firstName}`,
+      vehicleLabel: `${contract.vehicle.licensePlate} — ${contract.vehicle.make} ${contract.vehicle.model}`,
+      hasCheckout,
+      hasCheckin,
+      needsCheckout:
+        !hasCheckout &&
+        (contract.status === RentalContractStatus.DRAFT ||
+          contract.status === RentalContractStatus.ACTIVE),
+      needsCheckin:
+        !hasCheckin && contract.status === RentalContractStatus.ACTIVE,
+    };
+  });
+
+  return { queue, recentInspections };
+}
