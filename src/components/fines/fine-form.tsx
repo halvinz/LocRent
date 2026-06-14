@@ -247,14 +247,15 @@ export function FineForm() {
         <p className="text-sm text-destructive">{errors.root.message}</p>
       )}
 
-      <div className="flex gap-3">
-        <Button type="submit" disabled={isSubmitting}>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row">
+        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
           {isSubmitting ? "Enregistrement…" : "Enregistrer l'amende"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={() => router.push("/dashboard/fines")}
+          className="w-full sm:w-auto"
         >
           Annuler
         </Button>

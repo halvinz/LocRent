@@ -26,8 +26,8 @@ export function Pagination({ page, totalPages, total }: PaginationProps) {
   }
 
   return (
-    <div className="flex items-center justify-between border-t pt-4">
-      <p className="text-sm text-muted-foreground">
+    <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-center text-sm text-muted-foreground sm:text-left">
         {total} résultat{total > 1 ? "s" : ""} — page {page} / {totalPages}
       </p>
       <div className="flex gap-2">
@@ -36,10 +36,10 @@ export function Pagination({ page, totalPages, total }: PaginationProps) {
           size="sm"
           asChild
           disabled={page <= 1}
-          className={cn(page <= 1 && "pointer-events-none opacity-50")}
+          className={cn("flex-1 sm:flex-none", page <= 1 && "pointer-events-none opacity-50")}
         >
           <Link href={buildHref(page - 1) as Route}>
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 sm:mr-1" />
             Précédent
           </Link>
         </Button>
@@ -48,11 +48,14 @@ export function Pagination({ page, totalPages, total }: PaginationProps) {
           size="sm"
           asChild
           disabled={page >= totalPages}
-          className={cn(page >= totalPages && "pointer-events-none opacity-50")}
+          className={cn(
+            "flex-1 sm:flex-none",
+            page >= totalPages && "pointer-events-none opacity-50",
+          )}
         >
           <Link href={buildHref(page + 1) as Route}>
             Suivant
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 sm:ml-1" />
           </Link>
         </Button>
       </div>

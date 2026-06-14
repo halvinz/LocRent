@@ -104,9 +104,13 @@ export function ContractForm({
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
         const field = issue.path[0]?.toString();
-        if (field) setError(field as keyof ContractFormValues, { message: issue.message });
+        if (field) {
+          setError(field as keyof ContractFormValues, { message: issue.message });
+        }
       }
-      toast.error("Veuillez corriger les erreurs");
+      const firstMessage =
+        parsed.error.issues[0]?.message ?? "Veuillez corriger les erreurs";
+      toast.error(firstMessage);
       return;
     }
 
@@ -142,7 +146,10 @@ export function ContractForm({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  value={field.value || undefined}
+                  onValueChange={field.onChange}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner un client" />
                   </SelectTrigger>
@@ -166,7 +173,7 @@ export function ContractForm({
               rules={{ required: true }}
               render={({ field }) => (
                 <Select
-                  value={field.value}
+                  value={field.value || undefined}
                   onValueChange={(v) => {
                     field.onChange(v);
                     onVehicleChange(v);
@@ -215,19 +222,31 @@ export function ContractForm({
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="dailyPrice">Prix journalier (€)</Label>
-            <Input id="dailyPrice" type="number" step="0.01" {...register("dailyPrice")} />
+            <Input id="dailyPrice" type="number" step="0.01" min={0} {...register("dailyPrice")} />
+            {errors.dailyPrice && (
+              <p className="text-sm text-destructive">{errors.dailyPrice.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="depositAmount">Caution (€)</Label>
-            <Input id="depositAmount" type="number" step="0.01" {...register("depositAmount")} />
+            <Input id="depositAmount" type="number" step="0.01" min={0} {...register("depositAmount")} />
+            {errors.depositAmount && (
+              <p className="text-sm text-destructive">{errors.depositAmount.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="includedMileage">Km inclus</Label>
-            <Input id="includedMileage" type="number" {...register("includedMileage")} />
+            <Input id="includedMileage" type="number" min={0} {...register("includedMileage")} />
+            {errors.includedMileage && (
+              <p className="text-sm text-destructive">{errors.includedMileage.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="extraMileagePrice">Prix km supp. (€)</Label>
-            <Input id="extraMileagePrice" type="number" step="0.01" {...register("extraMileagePrice")} />
+            <Input id="extraMileagePrice" type="number" step="0.01" min={0} {...register("extraMileagePrice")} />
+            {errors.extraMileagePrice && (
+              <p className="text-sm text-destructive">{errors.extraMileagePrice.message}</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -240,15 +259,24 @@ export function ContractForm({
         <CardContent className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="startMileage">Kilométrage départ</Label>
-            <Input id="startMileage" type="number" {...register("startMileage")} />
+            <Input id="startMileage" type="number" min={0} {...register("startMileage")} />
+            {errors.startMileage && (
+              <p className="text-sm text-destructive">{errors.startMileage.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="expectedReturnMileage">Km retour prévu</Label>
-            <Input id="expectedReturnMileage" type="number" {...register("expectedReturnMileage")} />
+            <Input id="expectedReturnMileage" type="number" min={0} {...register("expectedReturnMileage")} />
+            {errors.expectedReturnMileage && (
+              <p className="text-sm text-destructive">{errors.expectedReturnMileage.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="startFuelLevel">Carburant (%)</Label>
             <Input id="startFuelLevel" type="number" min={0} max={100} {...register("startFuelLevel")} />
+            {errors.startFuelLevel && (
+              <p className="text-sm text-destructive">{errors.startFuelLevel.message}</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -259,10 +287,13 @@ export function ContractForm({
         </CardHeader>
         <CardContent>
           <Textarea rows={6} {...register("terms")} />
+          {errors.terms && (
+            <p className="mt-2 text-sm text-destructive">{errors.terms.message}</p>
+          )}
         </CardContent>
       </Card>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Enregistrement…" : mode === "create" ? "Créer le brouillon" : "Enregistrer"}
         </Button>

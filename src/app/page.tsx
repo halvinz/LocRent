@@ -21,8 +21,8 @@ export default async function HomePage() {
           Gérez vos clients, véhicules, contrats et amendes — tout en un seul
           endroit.
         </p>
-        <div className="mt-8 flex justify-center gap-4">
-          <Button asChild size="lg">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Button asChild size="lg" className="w-full sm:w-auto">
             <Link href="/login">Se connecter</Link>
           </Button>
         </div>

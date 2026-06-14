@@ -1,46 +1,79 @@
 import { RentalContractStatus } from "@prisma/client";
 import { z } from "zod";
-import { optionalDateString } from "./common";
+import {
+  createRequiredDateTimeSchema,
+  optionalDateString,
+} from "./common";
 
-const optionalDecimal = z
-  .union([z.string(), z.number()])
-  .optional()
-  .transform((v) => {
-    if (v === undefined || v === "") return undefined;
-    const n = typeof v === "number" ? v : parseFloat(v.replace(",", "."));
-    return Number.isNaN(n) ? undefined : n;
-  })
-  .pipe(z.number().min(0).optional());
+function emptyNumberToUndefined(value: unknown): unknown {
+  if (value === null || value === undefined || value === "") return undefined;
+  return value;
+}
 
-const optionalInt = z
-  .union([z.string(), z.number()])
-  .optional()
-  .transform((v) => {
-    if (v === undefined || v === "") return undefined;
-    const n = typeof v === "number" ? v : parseInt(v, 10);
-    return Number.isNaN(n) ? undefined : n;
-  })
-  .pipe(z.number().int().min(0).optional());
+const optionalDecimal = z.preprocess(
+  emptyNumberToUndefined,
+  z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      const n =
+        typeof v === "number" ? v : parseFloat(String(v).replace(",", "."));
+      return Number.isNaN(n) ? undefined : n;
+    })
+    .pipe(
+      z
+        .number({ invalid_type_error: "Montant invalide" })
+        .min(0, "Le montant doit être positif ou nul")
+        .optional(),
+    ),
+);
 
-const fuelLevelSchema = z
-  .union([z.string(), z.number()])
-  .optional()
-  .transform((v) => {
-    if (v === undefined || v === "") return undefined;
-    const n = typeof v === "number" ? v : parseInt(v, 10);
-    return Number.isNaN(n) ? undefined : n;
-  })
-  .pipe(z.number().int().min(0).max(100).optional());
+const optionalInt = z.preprocess(
+  emptyNumberToUndefined,
+  z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      const n = typeof v === "number" ? v : parseInt(String(v), 10);
+      return Number.isNaN(n) ? undefined : n;
+    })
+    .pipe(
+      z
+        .number({ invalid_type_error: "Nombre invalide" })
+        .int("Doit être un nombre entier")
+        .min(0, "Doit être positif ou nul")
+        .optional(),
+    ),
+);
+
+const fuelLevelSchema = z.preprocess(
+  emptyNumberToUndefined,
+  z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      const n = typeof v === "number" ? v : parseInt(String(v), 10);
+      return Number.isNaN(n) ? undefined : n;
+    })
+    .pipe(
+      z
+        .number({ invalid_type_error: "Niveau invalide" })
+        .int("Doit être un pourcentage entier")
+        .min(0, "Le carburant doit être entre 0 et 100 %")
+        .max(100, "Le carburant doit être entre 0 et 100 %")
+        .optional(),
+    ),
+);
 
 export const contractFormSchema = z
   .object({
     clientId: z.string().min(1, "Client requis"),
     vehicleId: z.string().min(1, "Véhicule requis"),
-    startAt: z.string().min(1, "Date de début requise").transform(optionalDateString),
-    expectedEndAt: z
-      .string()
-      .min(1, "Date de fin prévue requise")
-      .transform(optionalDateString),
+    startAt: createRequiredDateTimeSchema("Date de début"),
+    expectedEndAt: createRequiredDateTimeSchema("Date de fin prévue"),
     dailyPrice: optionalDecimal,
     depositAmount: optionalDecimal,
     includedMileage: optionalInt,
@@ -51,12 +84,11 @@ export const contractFormSchema = z
     terms: z
       .string()
       .trim()
-      .max(5000)
+      .max(5000, "Les clauses ne peuvent pas dépasser 5000 caractères")
       .optional()
       .transform((v) => (v === "" ? undefined : v)),
   })
   .superRefine((data, ctx) => {
-    if (!data.startAt || !data.expectedEndAt) return;
     if (data.startAt >= data.expectedEndAt) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -71,7 +103,8 @@ export const contractFormSchema = z
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Le kilométrage prévu au retour doit être ≥ au départ",
+        message:
+          "Le kilométrage prévu au retour doit être supérieur ou égal au départ",
         path: ["expectedReturnMileage"],
       });
     }

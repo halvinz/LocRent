@@ -9,6 +9,8 @@ import { listVehicles } from "@/server/services/vehicle.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Pagination } from "@/components/shared/pagination";
+import { DataTableScroll } from "@/components/shared/data-table-scroll";
+import { MobileListCard } from "@/components/shared/mobile-list-card";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { VEHICLE_STATUS_LABELS } from "@/types/enums";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +62,7 @@ export default async function VehiclesPage({ searchParams }: VehiclesPageProps) 
       />
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 pt-6 sm:p-6">
           <div className="mb-4 flex flex-col gap-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <Suspense fallback={<div className="h-10 max-w-sm flex-1 animate-pulse rounded-md bg-muted" />}>
@@ -104,14 +106,39 @@ export default async function VehiclesPage({ searchParams }: VehiclesPageProps) 
               Aucun véhicule trouvé.
             </div>
           ) : (
+            <>
+              <div className="space-y-3 md:hidden">
+                {result.items.map((vehicle) => (
+                  <MobileListCard
+                    key={vehicle.id}
+                    href={`/dashboard/vehicles/${vehicle.id}`}
+                    title={vehicle.licensePlate}
+                    subtitle={`${vehicle.make} ${vehicle.model}${vehicle.year ? ` (${vehicle.year})` : ""}`}
+                    meta={
+                      <>
+                        <VehicleStatusBadge status={vehicle.status} />
+                        {!vehicle.isActive && <Badge variant="muted">Archivé</Badge>}
+                        {vehicle.currentMileage != null && (
+                          <span className="text-xs text-muted-foreground">
+                            {vehicle.currentMileage.toLocaleString("fr-FR")} km
+                          </span>
+                        )}
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+
+              <div className="hidden md:block">
+                <DataTableScroll>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Plaque</TableHead>
                   <TableHead>Véhicule</TableHead>
-                  <TableHead>Km</TableHead>
+                  <TableHead className="hidden lg:table-cell">Km</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead>Contrats</TableHead>
+                  <TableHead className="hidden sm:table-cell">Contrats</TableHead>
                   <TableHead className="w-[80px]" />
                 </TableRow>
               </TableHeader>
@@ -132,7 +159,7 @@ export default async function VehiclesPage({ searchParams }: VehiclesPageProps) 
                         <span className="text-muted-foreground"> ({vehicle.year})</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {vehicle.currentMileage != null
                         ? `${vehicle.currentMileage.toLocaleString("fr-FR")} km`
                         : "—"}
@@ -140,7 +167,9 @@ export default async function VehiclesPage({ searchParams }: VehiclesPageProps) 
                     <TableCell>
                       <VehicleStatusBadge status={vehicle.status} />
                     </TableCell>
-                    <TableCell>{vehicle._count.rentalContracts}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {vehicle._count.rentalContracts}
+                    </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" asChild>
                         <Link href={`/dashboard/vehicles/${vehicle.id}`}>
@@ -152,6 +181,9 @@ export default async function VehiclesPage({ searchParams }: VehiclesPageProps) 
                 ))}
               </TableBody>
             </Table>
+                </DataTableScroll>
+              </div>
+            </>
           )}
 
           <div className="mt-4">

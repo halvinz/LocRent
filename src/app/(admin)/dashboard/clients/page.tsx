@@ -7,6 +7,8 @@ import { listClients } from "@/server/services/client.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Pagination } from "@/components/shared/pagination";
+import { DataTableScroll } from "@/components/shared/data-table-scroll";
+import { MobileListCard } from "@/components/shared/mobile-list-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +51,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
       />
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 pt-6 sm:p-6">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center">
             <Suspense fallback={<div className="h-10 max-w-sm flex-1 animate-pulse rounded-md bg-muted" />}>
               <SearchBar placeholder="Nom, email, téléphone, permis…" />
@@ -72,13 +74,48 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
               Aucun client trouvé.
             </div>
           ) : (
+            <>
+              <div className="space-y-3 md:hidden">
+                {result.items.map((client) => (
+                  <MobileListCard
+                    key={client.id}
+                    href={`/dashboard/clients/${client.id}`}
+                    title={`${client.lastName} ${client.firstName}`}
+                    subtitle={
+                      <>
+                        {client.email && <span>{client.email}</span>}
+                        {client.phone && (
+                          <span className={client.email ? " · " : ""}>{client.phone}</span>
+                        )}
+                        {!client.email && !client.phone && "—"}
+                      </>
+                    }
+                    meta={
+                      <>
+                        {client.isActive ? (
+                          <Badge variant="success">Actif</Badge>
+                        ) : (
+                          <Badge variant="muted">Archivé</Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {client._count.rentalContracts} contrat
+                          {client._count.rentalContracts > 1 ? "s" : ""}
+                        </span>
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+
+              <div className="hidden md:block">
+                <DataTableScroll>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Permis</TableHead>
-                  <TableHead>Contrats</TableHead>
+                  <TableHead className="hidden lg:table-cell">Permis</TableHead>
+                  <TableHead className="hidden sm:table-cell">Contrats</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="w-[80px]" />
                 </TableRow>
@@ -98,8 +135,12 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                         {!client.email && !client.phone && "—"}
                       </div>
                     </TableCell>
-                    <TableCell>{client.drivingLicenseNumber ?? "—"}</TableCell>
-                    <TableCell>{client._count.rentalContracts}</TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {client.drivingLicenseNumber ?? "—"}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {client._count.rentalContracts}
+                    </TableCell>
                     <TableCell>
                       {client.isActive ? (
                         <Badge variant="success">Actif</Badge>
@@ -118,6 +159,9 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                 ))}
               </TableBody>
             </Table>
+                </DataTableScroll>
+              </div>
+            </>
           )}
 
           <div className="mt-4">

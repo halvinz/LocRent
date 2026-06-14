@@ -267,7 +267,7 @@ export function VehicleForm({ mode, vehicleId, defaultValues }: VehicleFormProps
         </CardContent>
       </Card>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting
             ? "Enregistrement…"

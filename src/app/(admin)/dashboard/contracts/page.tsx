@@ -11,6 +11,8 @@ import { RENTAL_CONTRACT_STATUS_LABELS } from "@/types/enums";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Pagination } from "@/components/shared/pagination";
+import { DataTableScroll } from "@/components/shared/data-table-scroll";
+import { MobileListCard } from "@/components/shared/mobile-list-card";
 import { ContractStatusBadge } from "@/components/contracts/contract-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,7 +73,7 @@ export default async function ContractsPage({ searchParams }: ContractsPageProps
       />
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 pt-6 sm:p-6">
           <div className="mb-4 flex flex-col gap-4">
             <Suspense fallback={<div className="h-10 animate-pulse rounded-md bg-muted" />}>
               <SearchBar placeholder="N° contrat, client, plaque…" />
@@ -96,12 +98,34 @@ export default async function ContractsPage({ searchParams }: ContractsPageProps
           {items.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">Aucun contrat</div>
           ) : (
+            <>
+              <div className="space-y-3 md:hidden">
+                {items.map((c) => (
+                  <MobileListCard
+                    key={c.id}
+                    href={`/dashboard/contracts/${c.id}`}
+                    title={c.contractNumber ?? "Contrat"}
+                    subtitle={`${c.client.lastName} ${c.client.firstName} · ${c.vehicle.licensePlate}`}
+                    meta={
+                      <>
+                        <ContractStatusBadge status={c.status} />
+                        <span className="text-xs text-muted-foreground">
+                          {formatDateTime(c.startAt)} → {formatDateTime(c.expectedEndAt)}
+                        </span>
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+
+              <div className="hidden md:block">
+                <DataTableScroll>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>N°</TableHead>
                   <TableHead>Client</TableHead>
-                  <TableHead>Véhicule</TableHead>
+                  <TableHead className="hidden lg:table-cell">Véhicule</TableHead>
                   <TableHead>Période</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="w-[60px]" />
@@ -112,7 +136,7 @@ export default async function ContractsPage({ searchParams }: ContractsPageProps
                   <TableRow key={c.id}>
                     <TableCell className="font-mono text-sm">{c.contractNumber ?? "—"}</TableCell>
                     <TableCell>{c.client.lastName} {c.client.firstName}</TableCell>
-                    <TableCell className="font-mono">{c.vehicle.licensePlate}</TableCell>
+                    <TableCell className="hidden font-mono lg:table-cell">{c.vehicle.licensePlate}</TableCell>
                     <TableCell className="text-sm">
                       {formatDateTime(c.startAt)}
                       <br />
@@ -128,6 +152,9 @@ export default async function ContractsPage({ searchParams }: ContractsPageProps
                 ))}
               </TableBody>
             </Table>
+                </DataTableScroll>
+              </div>
+            </>
           )}
 
           <div className="mt-4">

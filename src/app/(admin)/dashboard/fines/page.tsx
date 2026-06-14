@@ -7,6 +7,8 @@ import { listFines } from "@/server/services/fine.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Pagination } from "@/components/shared/pagination";
+import { DataTableScroll } from "@/components/shared/data-table-scroll";
+import { MobileListCard } from "@/components/shared/mobile-list-card";
 import { FineStatusBadge } from "@/components/fines/fine-status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,7 +54,7 @@ export default async function FinesPage({ searchParams }: FinesPageProps) {
       />
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 pt-6 sm:p-6">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center">
             <Suspense
               fallback={
@@ -97,12 +99,45 @@ export default async function FinesPage({ searchParams }: FinesPageProps) {
               Aucune amende trouvée.
             </div>
           ) : (
+            <>
+              <div className="space-y-3 md:hidden">
+                {result.items.map((fine) => (
+                  <MobileListCard
+                    key={fine.id}
+                    href={`/dashboard/fines/${fine.id}`}
+                    title={fine.licensePlate}
+                    subtitle={
+                      <>
+                        {formatDateTime(fine.violationAt)}
+                        {fine.violationType && ` · ${fine.violationType}`}
+                      </>
+                    }
+                    meta={
+                      <>
+                        <FineStatusBadge status={fine.status} />
+                        <span className="text-sm font-medium">{formatMoney(fine.amount)}</span>
+                        {fine.rentalContract?.client ? (
+                          <span className="text-xs text-muted-foreground">
+                            {fine.rentalContract.client.lastName}{" "}
+                            {fine.rentalContract.client.firstName}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Non rapprochée</span>
+                        )}
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+
+              <div className="hidden md:block">
+                <DataTableScroll>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Plaque</TableHead>
                   <TableHead>Infraction</TableHead>
-                  <TableHead>Locataire</TableHead>
+                  <TableHead className="hidden lg:table-cell">Locataire</TableHead>
                   <TableHead>Montant</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="w-[80px]" />
@@ -124,7 +159,7 @@ export default async function FinesPage({ searchParams }: FinesPageProps) {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {fine.rentalContract?.client ? (
                         <div>
                           <div>
@@ -156,6 +191,9 @@ export default async function FinesPage({ searchParams }: FinesPageProps) {
                 ))}
               </TableBody>
             </Table>
+                </DataTableScroll>
+              </div>
+            </>
           )}
 
           <div className="mt-4">
