@@ -1,10 +1,9 @@
-import { Suspense } from "react";
-import Link from "next/link";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { StaffPermission } from "@prisma/client";
 import { guardPermission } from "@/lib/tenant/page-guard";
 import { listAllActiveReservations } from "@/server/services/reservation.service";
-import { SearchBar } from "@/components/shared/search-bar";
+import { ReservationsBackLink } from "@/components/admin/reservations-back-link";
 import { ReservationActions } from "@/components/reservations/reservation-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,32 +43,25 @@ export default async function ReservationsPage({
   const items = await listAllActiveReservations(companyId, q);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+    <div className="w-full min-w-0 space-y-4 sm:space-y-6">
+      <ReservationsBackLink variant="inline" className="mb-1" />
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
           <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
             Réservations en cours
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+          <p className="mt-1 text-sm text-muted-foreground">
             {items.length} réservation{items.length !== 1 ? "s" : ""} en cours
           </p>
         </div>
-        <Button asChild className="w-full shrink-0 sm:w-auto">
+        <Button asChild className="h-11 w-full shrink-0 sm:h-10 sm:w-auto">
           <Link href="/dashboard/reservations/new">Nouvelle réservation</Link>
         </Button>
       </div>
 
-      <Card>
-        <CardContent className="p-4 pt-6 sm:p-6">
-          <div className="mb-4 lg:hidden">
-            <Suspense
-              fallback={
-                <div className="h-10 max-w-sm flex-1 animate-pulse rounded-md bg-muted" />
-              }
-            >
-              <SearchBar placeholder="Rechercher une réservation…" />
-            </Suspense>
-          </div>
+      <Card className="overflow-hidden">
+        <CardContent className="p-3 sm:p-6">
 
           {items.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
@@ -89,10 +81,10 @@ export default async function ReservationsPage({
                   <div
                     key={reservation.id}
                     id={`reservation-${reservation.id}`}
-                    className="scroll-mt-24 flex items-start gap-3 rounded-lg border bg-card p-4"
+                    className="scroll-mt-28 rounded-xl border bg-card p-3 sm:p-4"
                   >
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <div className="font-medium leading-snug">
+                    <div className="min-w-0 space-y-2">
+                      <div className="font-semibold leading-snug">
                         {reservation.guestName}
                       </div>
                       <div className="space-y-1 text-sm text-muted-foreground">
@@ -102,7 +94,7 @@ export default async function ReservationsPage({
                             {formatBookedBy(reservation.bookedBy)}
                           </span>
                         </p>
-                        <p>
+                        <p className="break-all">
                           {formatContact(
                             reservation.phone,
                             reservation.snapchat,
@@ -110,7 +102,7 @@ export default async function ReservationsPage({
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className="text-xs">
                           Acompte {formatMoney(reservation.depositAmount)}
                         </Badge>
                         {reservation.vehicle && (
@@ -118,15 +110,17 @@ export default async function ReservationsPage({
                             {reservation.vehicle.licensePlate}
                           </span>
                         )}
-                        <span className="text-xs text-muted-foreground">
-                          {formatDateTime(reservation.createdAt)}
-                        </span>
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDateTime(reservation.createdAt)}
+                      </p>
                     </div>
-                    <ReservationActions
-                      reservationId={reservation.id}
-                      guestName={reservation.guestName}
-                    />
+                    <div className="mt-3 flex justify-end border-t pt-2">
+                      <ReservationActions
+                        reservationId={reservation.id}
+                        guestName={reservation.guestName}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

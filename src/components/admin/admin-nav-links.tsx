@@ -11,6 +11,7 @@ import {
   RESERVATIONS_PATH,
 } from "@/config/navigation";
 import { ReservationsSidebarList } from "./reservations-sidebar-list";
+import { ReservationsBackLink } from "./reservations-back-link";
 
 interface AdminNavLinksProps {
   userRole: UserRole;
@@ -56,6 +57,12 @@ export function AdminNavLinks({
         className,
       )}
     >
+      {focusedReservations && (
+        <div className="mb-2 hidden lg:block">
+          <ReservationsBackLink onNavigate={onNavigate} />
+        </div>
+      )}
+
       {visibleItems.map((item) => {
         const isActive =
           item.href === "/dashboard"

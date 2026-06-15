@@ -49,7 +49,7 @@ export function AdminLayoutClient({
           mobileNavOpen={mobileNavOpen}
           onMenuClick={() => setMobileNavOpen((prev) => !prev)}
         />
-        <main className="relative z-10 flex-1 overflow-x-hidden overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
+        <main className="relative z-10 flex-1 overflow-x-hidden overflow-y-auto p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
           {children}
         </main>
       </div>

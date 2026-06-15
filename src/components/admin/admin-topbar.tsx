@@ -1,11 +1,14 @@
 "use client";
 
-import { LogOut, Menu, User } from "lucide-react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { CalendarCheck, LogOut, Menu, User } from "lucide-react";
 import { UserRole } from "@prisma/client";
 import { getInitials } from "@/lib/utils";
 import { USER_ROLE_LABELS } from "@/types/enums";
 import { logoutAction } from "@/server/actions/auth.actions";
-import { APP_NAME } from "@/config/navigation";
+import { APP_NAME, isReservationsFocusedPath } from "@/config/navigation";
+import { ReservationsBackLink } from "./reservations-back-link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,31 +38,57 @@ export function AdminTopbar({
   onMenuClick,
   mobileNavOpen,
 }: AdminTopbarProps) {
+  const pathname = usePathname();
+  const focusedReservations = isReservationsFocusedPath(pathname);
   const initials = getInitials(user.firstName, user.lastName);
 
   return (
-    <header className="glass-panel relative z-20 flex min-h-14 shrink-0 items-center justify-between gap-3 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:min-h-16 sm:px-6 sm:pb-0 sm:pt-0">
-      <div className="flex min-w-0 items-center gap-3">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-11 w-11 shrink-0 touch-manipulation lg:hidden"
-          onClick={() => onMenuClick?.()}
-          aria-label={mobileNavOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          aria-expanded={mobileNavOpen ?? false}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-        <div className="min-w-0">
+    <header className="glass-panel relative z-20 flex min-h-14 shrink-0 items-center justify-between gap-2 px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:gap-3 sm:px-6 sm:pb-0 sm:pt-0 lg:min-h-16">
+      <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-3">
+        {focusedReservations ? (
+          <>
+            <ReservationsBackLink variant="bar" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-11 w-11 shrink-0 touch-manipulation lg:hidden"
+              onClick={() => onMenuClick?.()}
+              aria-label={
+                mobileNavOpen
+                  ? "Fermer la liste"
+                  : "Ouvrir la liste des réservations"
+              }
+              aria-expanded={mobileNavOpen ?? false}
+            >
+              <CalendarCheck className="h-5 w-5" />
+            </Button>
+          </>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-11 w-11 shrink-0 touch-manipulation lg:hidden"
+            onClick={() => onMenuClick?.()}
+            aria-label={mobileNavOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileNavOpen ?? false}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
+
+        <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-medium text-muted-foreground lg:hidden">
-            {APP_NAME}
+            {focusedReservations ? APP_NAME : APP_NAME}
           </p>
           <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
-            {companyName}
+            {focusedReservations ? "Réservations" : companyName}
           </h1>
           <p className="hidden text-sm text-muted-foreground sm:block">
-            Espace de gestion
+            {focusedReservations
+              ? "Réservations en cours"
+              : "Espace de gestion"}
           </p>
         </div>
       </div>
@@ -92,6 +121,16 @@ export function AdminTopbar({
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {focusedReservations && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard">
+                  Retour au menu principal
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem disabled>
             <User className="mr-2 h-4 w-4" />
             Mon profil
