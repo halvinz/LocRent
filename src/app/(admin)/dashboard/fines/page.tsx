@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { fineSearchSchema } from "@/lib/validations/fine";
 import { listFines } from "@/server/services/fine.service";
 import { PageHeader } from "@/components/shared/page-header";
@@ -35,7 +36,7 @@ interface FinesPageProps {
 }
 
 export default async function FinesPage({ searchParams }: FinesPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.FINES);
   const params = fineSearchSchema.parse({
     page: searchParams.page,
     pageSize: searchParams.pageSize,

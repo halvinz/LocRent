@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { formatDateForInput } from "@/lib/utils";
 import { getVehicleById } from "@/server/services/vehicle.service";
 import { PageHeader } from "@/components/shared/page-header";
@@ -15,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function EditVehiclePage({ params }: EditVehiclePageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.VEHICLES);
 
   let vehicle;
   try {

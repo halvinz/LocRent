@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Route } from "next";
 import type { Metadata } from "next";
-import { InspectionType, RentalContractStatus } from "@prisma/client";
-import { requireAuth } from "@/lib/tenant";
+import { InspectionType, RentalContractStatus, StaffPermission } from "@prisma/client";
+import { guardAnyPermission } from "@/lib/tenant/page-guard";
 import { getInspectionsOverview } from "@/server/services/inspection.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { ContractStatusBadge } from "@/components/contracts/contract-status-badge";
@@ -44,7 +44,10 @@ function InspectionStatusBadge({ done, label }: { done: boolean; label: string }
 }
 
 export default async function InspectionsPage() {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardAnyPermission(
+    StaffPermission.INSPECTIONS,
+    StaffPermission.CONTRACTS,
+  );
   const { queue, recentInspections } = await getInspectionsOverview(companyId);
 
   const pendingCount = queue.filter((c) => c.needsCheckout || c.needsCheckin).length;

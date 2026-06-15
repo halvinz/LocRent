@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { InspectionType, RentalContractStatus } from "@prisma/client";
-import { requireAuth } from "@/lib/tenant";
+import { InspectionType, RentalContractStatus, StaffPermission } from "@prisma/client";
+import { guardAnyPermission } from "@/lib/tenant/page-guard";
 import { getContractById, getInspectionByType } from "@/server/services/contract.service";
 import type { InspectionChecklist } from "@/config/inspection";
 import { PageHeader } from "@/components/shared/page-header";
@@ -14,7 +14,10 @@ interface CheckinPageProps {
 export const metadata: Metadata = { title: "État des lieux — retour" };
 
 export default async function CheckinPage({ params }: CheckinPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardAnyPermission(
+    StaffPermission.INSPECTIONS,
+    StaffPermission.CONTRACTS,
+  );
 
   let contract;
   try {
@@ -46,7 +49,7 @@ export default async function CheckinPage({ params }: CheckinPageProps) {
           checklist: (existing?.checklist as InspectionChecklist) ?? {},
           photos: existing?.photos.length
             ? existing.photos.map((p) => ({ url: p.url, caption: p.caption ?? "" }))
-            : [{ url: "", caption: "" }],
+            : [],
         }}
       />
     </div>

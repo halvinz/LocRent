@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession, AUTH_ROUTES } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { resolveUserPermissions } from "@/lib/permissions";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -22,6 +23,7 @@ export default async function AdminLayout({
       lastName: true,
       email: true,
       role: true,
+      permissions: true,
       company: { select: { name: true } },
     },
   });
@@ -30,6 +32,8 @@ export default async function AdminLayout({
     redirect(AUTH_ROUTES.login);
   }
 
+  const permissions = resolveUserPermissions(user.role, user.permissions);
+
   return (
     <AdminShell
       user={{
@@ -37,6 +41,7 @@ export default async function AdminLayout({
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        permissions,
       }}
       companyName={user.company.name}
     >

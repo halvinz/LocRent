@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import { StaffPermission, UserRole } from "@prisma/client";
 
 export interface SessionUser {
   id: string;
@@ -33,4 +33,5 @@ export interface TenantContext {
   companyId: string;
   userId: string;
   role: UserRole;
+  permissions: StaffPermission[];
 }

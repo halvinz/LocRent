@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { getFineById } from "@/server/services/fine.service";
 import { FineStatusBadge } from "@/components/fines/fine-status-badge";
 import { FineMatchTimeline } from "@/components/fines/fine-match-timeline";
@@ -26,7 +27,7 @@ export async function generateMetadata({
   params,
 }: FineDetailPageProps): Promise<Metadata> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await guardPermission(StaffPermission.FINES);
     const fine = await getFineById(companyId, params.id);
     return {
       title: `Amende ${fine.licensePlate}`,
@@ -37,7 +38,7 @@ export async function generateMetadata({
 }
 
 export default async function FineDetailPage({ params }: FineDetailPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.FINES);
 
   let fine;
   try {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { UserRole } from "@prisma/client";
+import type { StaffPermission, UserRole } from "@prisma/client";
 import { AdminSidebar } from "./admin-sidebar";
 import { AdminTopbar } from "./admin-topbar";
 import { AdminMobileNav } from "./admin-mobile-nav";
@@ -13,6 +13,7 @@ interface AdminLayoutClientProps {
     lastName: string;
     email: string;
     role: UserRole;
+    permissions: StaffPermission[];
   };
   companyName: string;
 }
@@ -27,11 +28,16 @@ export function AdminLayoutClient({
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <AdminSidebar userRole={user.role} companyName={companyName} />
+      <AdminSidebar
+        userRole={user.role}
+        permissions={user.permissions}
+        companyName={companyName}
+      />
       <AdminMobileNav
         open={mobileNavOpen}
         onClose={closeMobileNav}
         userRole={user.role}
+        permissions={user.permissions}
         companyName={companyName}
       />
       <div className="flex min-w-0 flex-1 flex-col">

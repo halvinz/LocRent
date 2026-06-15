@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { Metadata } from "next";
 import { RentalContractStatus } from "@prisma/client";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { contractSearchSchema } from "@/lib/validations/contract";
 import { listContracts } from "@/server/services/contract.service";
 import { formatDateTime } from "@/lib/utils";
@@ -33,7 +34,7 @@ interface ContractsPageProps {
 }
 
 export default async function ContractsPage({ searchParams }: ContractsPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.CONTRACTS);
   const params = contractSearchSchema.parse({
     page: searchParams.page,
     pageSize: searchParams.pageSize,

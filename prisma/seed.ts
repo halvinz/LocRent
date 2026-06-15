@@ -1,6 +1,7 @@
 import {
   PrismaClient,
   UserRole,
+  StaffPermission,
   VehicleStatus,
   RentalContractStatus,
   FineStatus,
@@ -51,7 +52,13 @@ async function main() {
         email: "staff@demo-agency.fr",
       },
     },
-    update: {},
+    update: {
+      permissions: [
+        StaffPermission.CLIENTS,
+        StaffPermission.CONTRACTS,
+        StaffPermission.INSPECTIONS,
+      ],
+    },
     create: {
       companyId: company.id,
       email: "staff@demo-agency.fr",
@@ -59,6 +66,11 @@ async function main() {
       firstName: "Marie",
       lastName: "Martin",
       role: UserRole.STAFF,
+      permissions: [
+        StaffPermission.CLIENTS,
+        StaffPermission.CONTRACTS,
+        StaffPermission.INSPECTIONS,
+      ],
     },
   });
 

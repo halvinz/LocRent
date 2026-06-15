@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { RentalContractStatus } from "@prisma/client";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import {
   getContractById,
   getContractFormOptions,
@@ -19,7 +20,7 @@ interface EditContractPageProps {
 export const metadata: Metadata = { title: "Modifier le contrat" };
 
 export default async function EditContractPage({ params }: EditContractPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.CONTRACTS);
 
   let contract;
   try {

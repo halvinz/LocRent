@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { getClientById } from "@/server/services/client.service";
 import { formatDate } from "@/lib/utils";
 import { RENTAL_CONTRACT_STATUS_LABELS } from "@/types/enums";
@@ -33,7 +34,7 @@ export async function generateMetadata({
   params,
 }: ClientDetailPageProps): Promise<Metadata> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await guardPermission(StaffPermission.CLIENTS);
     const client = await getClientById(companyId, params.id);
     return {
       title: `${client.firstName} ${client.lastName}`,
@@ -46,7 +47,7 @@ export async function generateMetadata({
 export default async function ClientDetailPage({
   params,
 }: ClientDetailPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.CLIENTS);
 
   let client;
   try {

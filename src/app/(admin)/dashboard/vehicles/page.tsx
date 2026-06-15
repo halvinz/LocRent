@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { Metadata } from "next";
 import { VehicleStatus } from "@prisma/client";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { vehicleSearchSchema } from "@/lib/validations/vehicle";
 import { listVehicles } from "@/server/services/vehicle.service";
 import { PageHeader } from "@/components/shared/page-header";
@@ -33,7 +34,7 @@ interface VehiclesPageProps {
 }
 
 export default async function VehiclesPage({ searchParams }: VehiclesPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.VEHICLES);
   const params = vehicleSearchSchema.parse({
     page: searchParams.page,
     pageSize: searchParams.pageSize,

@@ -2,26 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserRole } from "@prisma/client";
+import { StaffPermission, UserRole } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { hasAnyPermission } from "@/lib/permissions";
 import { ADMIN_NAV_ITEMS } from "@/config/navigation";
 
 interface AdminNavLinksProps {
   userRole: UserRole;
+  permissions: StaffPermission[];
   onNavigate?: () => void;
   className?: string;
 }
 
 export function AdminNavLinks({
   userRole,
+  permissions,
   onNavigate,
   className,
 }: AdminNavLinksProps) {
   const pathname = usePathname();
 
-  const navItems = ADMIN_NAV_ITEMS.filter(
-    (item) => !item.adminOnly || userRole === UserRole.ADMIN,
-  );
+  const navItems = ADMIN_NAV_ITEMS.filter((item) => {
+    if (item.adminOnly && userRole !== UserRole.ADMIN) return false;
+    if (userRole === UserRole.ADMIN) return true;
+    if (!item.permission) return true;
+    const required = Array.isArray(item.permission)
+      ? item.permission
+      : [item.permission];
+    return hasAnyPermission({ role: userRole, permissions }, required);
+  });
 
   return (
     <nav className={cn("flex flex-col gap-1", className)}>

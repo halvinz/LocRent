@@ -18,6 +18,14 @@ enum UserRole {
   STAFF
 }
 
+enum StaffPermission {
+  CLIENTS
+  VEHICLES
+  CONTRACTS
+  INSPECTIONS
+  FINES
+}
+
 enum RentalContractStatus {
   DRAFT
   ACTIVE
@@ -78,8 +86,9 @@ model User {
   passwordHash String
   firstName    String
   lastName     String
-  role         UserRole  @default(STAFF)
-  isActive     Boolean   @default(true)
+  role         UserRole          @default(STAFF)
+  permissions  StaffPermission[] @default([])
+  isActive     Boolean           @default(true)
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

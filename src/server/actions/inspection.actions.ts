@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { InspectionType } from "@prisma/client";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { requireAnyPermission } from "@/lib/tenant";
 import { inspectionFormSchema } from "@/lib/validations/inspection";
 import { toActionResult, toActionSuccess } from "@/lib/actions/utils";
 import { upsertInspection } from "@/server/services/inspection.service";
@@ -16,7 +17,10 @@ export async function saveInspectionAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId, userId } = await requireAuth();
+    const { companyId, userId } = await requireAnyPermission(
+      StaffPermission.INSPECTIONS,
+      StaffPermission.CONTRACTS,
+    );
     const data = inspectionFormSchema.parse(input);
     const inspection = await upsertInspection(
       companyId,

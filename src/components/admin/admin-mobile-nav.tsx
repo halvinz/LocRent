@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { UserRole } from "@prisma/client";
+import { StaffPermission, UserRole } from "@prisma/client";
 import { X, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/config/navigation";
@@ -14,6 +14,7 @@ interface AdminMobileNavProps {
   open: boolean;
   onClose: () => void;
   userRole: UserRole;
+  permissions: StaffPermission[];
   companyName: string;
 }
 
@@ -21,6 +22,7 @@ export function AdminMobileNav({
   open,
   onClose,
   userRole,
+  permissions,
   companyName,
 }: AdminMobileNavProps) {
   const pathname = usePathname();
@@ -87,7 +89,11 @@ export function AdminMobileNav({
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <AdminNavLinks userRole={userRole} onNavigate={onClose} />
+          <AdminNavLinks
+            userRole={userRole}
+            permissions={permissions}
+            onNavigate={onClose}
+          />
         </div>
 
         <Separator className="bg-sidebar-border" />

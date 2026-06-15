@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { requirePermission } from "@/lib/tenant";
 import { vehicleFormSchema } from "@/lib/validations/vehicle";
 import { toActionResult, toActionSuccess } from "@/lib/actions/utils";
 import {
@@ -19,7 +20,7 @@ export async function createVehicleAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.VEHICLES);
     const data = vehicleFormSchema.parse(input);
     const vehicle = await createVehicle(companyId, data);
     revalidatePath(VEHICLES_PATH);
@@ -34,7 +35,7 @@ export async function updateVehicleAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.VEHICLES);
     const data = vehicleFormSchema.parse(input);
     await updateVehicle(companyId, id, data);
     revalidatePath(VEHICLES_PATH);
@@ -48,7 +49,7 @@ export async function updateVehicleAction(
 
 export async function deleteVehicleAction(id: string): Promise<ActionResult> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.VEHICLES);
     await softDeleteVehicle(companyId, id);
     revalidatePath(VEHICLES_PATH);
     revalidatePath(`${VEHICLES_PATH}/${id}`);
@@ -60,7 +61,7 @@ export async function deleteVehicleAction(id: string): Promise<ActionResult> {
 
 export async function restoreVehicleAction(id: string): Promise<ActionResult> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.VEHICLES);
     await restoreVehicle(companyId, id);
     revalidatePath(VEHICLES_PATH);
     revalidatePath(`${VEHICLES_PATH}/${id}`);

@@ -3,7 +3,8 @@ import type { Route } from "next";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { InspectionType, RentalContractStatus } from "@prisma/client";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { getContractById, getInspectionByType } from "@/server/services/contract.service";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 import { ContractStatusBadge } from "@/components/contracts/contract-status-badge";
@@ -24,7 +25,7 @@ interface ContractDetailPageProps {
 
 export async function generateMetadata({ params }: ContractDetailPageProps): Promise<Metadata> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await guardPermission(StaffPermission.CONTRACTS);
     const c = await getContractById(companyId, params.id);
     return { title: c.contractNumber ?? "Contrat" };
   } catch {
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: ContractDetailPageProps): Pro
 }
 
 export default async function ContractDetailPage({ params }: ContractDetailPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.CONTRACTS);
 
   let contract;
   try {

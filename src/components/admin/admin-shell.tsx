@@ -1,4 +1,4 @@
-import type { UserRole } from "@prisma/client";
+import type { StaffPermission, UserRole } from "@prisma/client";
 import { AdminLayoutClient } from "./admin-layout-client";
 
 interface AdminShellProps {
@@ -8,6 +8,7 @@ interface AdminShellProps {
     lastName: string;
     email: string;
     role: UserRole;
+    permissions: StaffPermission[];
   };
   companyName: string;
 }

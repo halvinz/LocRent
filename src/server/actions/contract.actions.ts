@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { requirePermission } from "@/lib/tenant";
 import { contractFormSchema, completeContractSchema } from "@/lib/validations/contract";
 import { toActionResult, toActionSuccess } from "@/lib/actions/utils";
 import {
@@ -21,7 +22,7 @@ export async function createContractAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CONTRACTS);
     const data = contractFormSchema.parse(input);
     const contract = await createContract(companyId, data);
     revalidatePath(BASE);
@@ -36,7 +37,7 @@ export async function updateContractAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CONTRACTS);
     const data = contractFormSchema.parse(input);
     await updateContract(companyId, id, data);
     revalidatePath(BASE);
@@ -51,7 +52,7 @@ export async function activateContractAction(
   id: string,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CONTRACTS);
     await activateContract(companyId, id);
     revalidatePath(BASE);
     revalidatePath(`${BASE}/${id}`);
@@ -66,7 +67,7 @@ export async function completeContractAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CONTRACTS);
     const data = completeContractSchema.parse(input);
     await completeContract(companyId, id, data);
     revalidatePath(BASE);
@@ -81,7 +82,7 @@ export async function cancelContractAction(
   id: string,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CONTRACTS);
     await cancelContract(companyId, id);
     revalidatePath(BASE);
     revalidatePath(`${BASE}/${id}`);
@@ -95,7 +96,7 @@ export async function deleteContractAction(
   id: string,
 ): Promise<ActionResult> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CONTRACTS);
     await deleteContract(companyId, id);
     revalidatePath(BASE);
     revalidatePath("/dashboard");

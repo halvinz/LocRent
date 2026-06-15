@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { getContractFormOptions } from "@/server/services/contract.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { ContractForm } from "@/components/contracts/contract-form";
@@ -7,7 +8,7 @@ import { ContractForm } from "@/components/contracts/contract-form";
 export const metadata: Metadata = { title: "Nouveau contrat" };
 
 export default async function NewContractPage() {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.CONTRACTS);
   const { clients, vehicles } = await getContractFormOptions(companyId);
 
   return (

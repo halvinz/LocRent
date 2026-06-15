@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { requirePermission } from "@/lib/tenant";
 import {
   fineFormSchema,
   fineMatchSchema,
@@ -26,7 +27,7 @@ export async function matchRenterAction(
   input: unknown,
 ): Promise<ActionResult<FineMatchResult>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.FINES);
     const data = fineMatchSchema.parse(input);
     const result = await matchFinePreview(
       companyId,
@@ -43,7 +44,7 @@ export async function createFineAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.FINES);
     const data = fineFormSchema.parse(input);
     const fine = await createFine(companyId, data);
     revalidatePath(BASE);
@@ -59,7 +60,7 @@ export async function linkFineAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.FINES);
     const data = linkFineSchema.parse(input);
     await linkFineToContract(
       companyId,
@@ -81,7 +82,7 @@ export async function updateFineStatusAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.FINES);
     const { status } = updateFineStatusSchema.parse(input);
     await updateFineStatus(companyId, fineId, status);
     revalidatePath(BASE);
@@ -105,7 +106,7 @@ export async function createFineAndRedirectAction(
 
 export async function deleteFineAction(id: string): Promise<ActionResult> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.FINES);
     await deleteFine(companyId, id);
     revalidatePath(BASE);
     revalidatePath("/dashboard");

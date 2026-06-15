@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { formatDateForInput } from "@/lib/utils";
 import { getClientById } from "@/server/services/client.service";
 import { PageHeader } from "@/components/shared/page-header";
@@ -17,7 +18,7 @@ export async function generateMetadata({
 }
 
 export default async function EditClientPage({ params }: EditClientPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.CLIENTS);
 
   let client;
   try {

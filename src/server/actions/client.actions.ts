@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { requirePermission } from "@/lib/tenant";
 import { clientFormSchema } from "@/lib/validations/client";
 import { toActionResult, toActionSuccess } from "@/lib/actions/utils";
 import {
@@ -19,7 +20,7 @@ export async function createClientAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CLIENTS);
     const data = clientFormSchema.parse(input);
     const client = await createClient(companyId, data);
     revalidatePath(CLIENTS_PATH);
@@ -34,7 +35,7 @@ export async function updateClientAction(
   input: unknown,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CLIENTS);
     const data = clientFormSchema.parse(input);
     await updateClient(companyId, id, data);
     revalidatePath(CLIENTS_PATH);
@@ -48,7 +49,7 @@ export async function updateClientAction(
 
 export async function deleteClientAction(id: string): Promise<ActionResult> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CLIENTS);
     await softDeleteClient(companyId, id);
     revalidatePath(CLIENTS_PATH);
     revalidatePath(`${CLIENTS_PATH}/${id}`);
@@ -60,7 +61,7 @@ export async function deleteClientAction(id: string): Promise<ActionResult> {
 
 export async function restoreClientAction(id: string): Promise<ActionResult> {
   try {
-    const { companyId } = await requireAuth();
+    const { companyId } = await requirePermission(StaffPermission.CLIENTS);
     await restoreClient(companyId, id);
     revalidatePath(CLIENTS_PATH);
     revalidatePath(`${CLIENTS_PATH}/${id}`);

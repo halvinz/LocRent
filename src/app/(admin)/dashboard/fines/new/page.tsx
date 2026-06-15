@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { ArrowLeft } from "lucide-react";
 import { FineForm } from "@/components/fines/fine-form";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Nouvelle amende" };
 
-export default function NewFinePage() {
+export default async function NewFinePage() {
+  await guardPermission(StaffPermission.FINES);
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">

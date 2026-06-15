@@ -1,1 +1,1 @@
-export { requireAuth, requireAdmin, tenantWhere } from "./context";
+export { requireAuth, requireAdmin, requirePermission, requireAnyPermission, tenantWhere } from "./context";

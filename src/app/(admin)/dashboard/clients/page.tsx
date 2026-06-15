@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { requireAuth } from "@/lib/tenant";
+import { StaffPermission } from "@prisma/client";
+import { guardPermission } from "@/lib/tenant/page-guard";
 import { clientSearchSchema } from "@/lib/validations/client";
 import { listClients } from "@/server/services/client.service";
 import { PageHeader } from "@/components/shared/page-header";
@@ -32,7 +33,7 @@ interface ClientsPageProps {
 }
 
 export default async function ClientsPage({ searchParams }: ClientsPageProps) {
-  const { companyId } = await requireAuth();
+  const { companyId } = await guardPermission(StaffPermission.CLIENTS);
   const params = clientSearchSchema.parse({
     page: searchParams.page,
     pageSize: searchParams.pageSize,
