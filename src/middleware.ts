@@ -40,7 +40,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (pathname === AUTH_ROUTES.login && isAuthenticated) {
+  if (
+    (pathname === AUTH_ROUTES.login || pathname === AUTH_ROUTES.register) &&
+    isAuthenticated
+  ) {
     return NextResponse.redirect(new URL(AUTH_ROUTES.dashboard, request.url));
   }
 
@@ -51,5 +54,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/login",
+    "/register",
   ],
 };

@@ -29,11 +29,16 @@ interface AdminTopbarProps {
   mobileNavOpen?: boolean;
 }
 
-export function AdminTopbar({ user, companyName, onMenuClick, mobileNavOpen }: AdminTopbarProps) {
+export function AdminTopbar({
+  user,
+  companyName,
+  onMenuClick,
+  mobileNavOpen,
+}: AdminTopbarProps) {
   const initials = getInitials(user.firstName, user.lastName);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background px-4 sm:h-16 sm:px-6">
+    <header className="glass-panel relative z-20 flex h-14 shrink-0 items-center justify-between gap-3 px-4 sm:h-16 sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
         <Button
           type="button"
@@ -61,13 +66,18 @@ export function AdminTopbar({ user, companyName, onMenuClick, mobileNavOpen }: A
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-9 w-9 shrink-0 rounded-full sm:h-10 sm:w-10">
-            <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
-              <AvatarFallback className="text-xs sm:text-sm">{initials}</AvatarFallback>
+          <Button
+            variant="ghost"
+            className="relative h-9 w-9 shrink-0 rounded-full sm:h-10 sm:w-10"
+          >
+            <Avatar className="h-9 w-9 border border-white/80 sm:h-10 sm:w-10">
+              <AvatarFallback className="bg-[#1e3a5f] text-xs text-white sm:text-sm">
+                {initials}
+              </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuContent className="w-56 rounded-xl" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">

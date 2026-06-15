@@ -11,19 +11,21 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+/** Inscription loueur : 1 agence = 1 company = 1 admin */
 export const registerCompanySchema = z.object({
-  companyName: z.string().min(2, "Nom de société requis (min. 2 caractères)"),
-  firstName: z.string().min(1, "Prénom requis"),
-  lastName: z.string().min(1, "Nom requis"),
+  companyName: z
+    .string()
+    .trim()
+    .min(2, "Nom d'agence requis (min. 2 caractères)")
+    .max(120, "Nom d'agence trop long"),
   email: z
     .string()
+    .min(1, "L'email est requis")
     .email("Email invalide")
     .transform((v) => v.toLowerCase().trim()),
   password: z
     .string()
-    .min(8, "Minimum 8 caractères")
-    .regex(/[A-Z]/, "Au moins une majuscule")
-    .regex(/[0-9]/, "Au moins un chiffre"),
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
 });
 
 export type RegisterCompanyInput = z.infer<typeof registerCompanySchema>;

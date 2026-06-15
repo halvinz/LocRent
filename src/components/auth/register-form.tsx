@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useFormState, useFormStatus } from "react-dom";
 import { Building2, Lock, Mail } from "lucide-react";
-import { loginAction } from "@/server/actions/auth.actions";
+import { registerAction } from "@/server/actions/auth.actions";
 import { AUTH_ROUTES } from "@/lib/auth/constants";
 import { AuthCard, AuthField } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
@@ -17,26 +17,26 @@ function SubmitButton() {
       disabled={pending}
       className="h-11 w-full rounded-xl text-base font-semibold"
     >
-      {pending ? "Connexion…" : "Se connecter"}
+      {pending ? "Création…" : "Créer mon compte"}
     </Button>
   );
 }
 
-export function LoginForm() {
-  const [state, formAction] = useFormState(loginAction, null);
+export function RegisterForm() {
+  const [state, formAction] = useFormState(registerAction, null);
 
   return (
     <AuthCard
-      title="Bon retour sur LocRent"
-      subtitle="Accédez à votre espace de gestion de location"
+      title="Créer votre agence"
+      subtitle="1 loueur = 1 agence = 1 compte administrateur"
       footer={
         <div className="text-center text-sm text-slate-600">
-          Pas encore de compte ?{" "}
+          Déjà un compte ?{" "}
           <Link
-            href={AUTH_ROUTES.register as Route}
+            href={AUTH_ROUTES.login as Route}
             className="font-semibold text-primary hover:underline"
           >
-            S&apos;inscrire
+            Se connecter
           </Link>
         </div>
       }
@@ -49,9 +49,19 @@ export function LoginForm() {
         )}
 
         <AuthField
+          id="companyName"
+          name="companyName"
+          label="Nom de l'agence"
+          placeholder="Agence Paris Location"
+          autoComplete="organization"
+          icon={<Building2 className="h-4 w-4" />}
+          error={state?.fieldErrors?.companyName?.[0]}
+        />
+
+        <AuthField
           id="email"
           name="email"
-          label="Email"
+          label="Email administrateur"
           type="email"
           placeholder="vous@agence.fr"
           autoComplete="email"
@@ -64,10 +74,15 @@ export function LoginForm() {
           name="password"
           label="Mot de passe"
           type="password"
-          autoComplete="current-password"
+          autoComplete="new-password"
           icon={<Lock className="h-4 w-4" />}
           error={state?.fieldErrors?.password?.[0]}
         />
+
+        <p className="text-xs text-slate-500">
+          Minimum 8 caractères. Vous serez administrateur de votre agence et
+          pourrez inviter des employés ensuite.
+        </p>
 
         <SubmitButton />
       </form>

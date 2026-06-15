@@ -19,26 +19,27 @@ export function AdminSidebar({
   companyName,
 }: AdminSidebarProps) {
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground lg:flex">
-      <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
-          <Car className="h-4 w-4 text-sidebar-primary-foreground" />
+    <aside className="relative z-20 hidden w-64 shrink-0 flex-col overflow-hidden border-r border-[#1e3a5f]/30 bg-[#0c2340] text-sidebar-foreground lg:flex">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#1e3a5f]/20 via-transparent to-slate-950/40" />
+      <div className="relative flex h-16 items-center gap-2 border-b border-white/10 px-6">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1e3a5f] shadow-lg shadow-black/20">
+          <Car className="h-4 w-4 text-white" />
         </div>
         <div className="min-w-0 flex flex-col">
-          <span className="truncate text-sm font-semibold">{APP_NAME}</span>
-          <span className="truncate text-xs text-sidebar-foreground/70">
-            {companyName}
+          <span className="truncate text-sm font-semibold text-white">
+            {APP_NAME}
           </span>
+          <span className="truncate text-xs text-white/65">{companyName}</span>
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-3 py-4">
+      <ScrollArea className="relative flex-1 px-3 py-4">
         <AdminNavLinks userRole={userRole} permissions={permissions} />
       </ScrollArea>
 
-      <Separator className="bg-sidebar-border" />
-      <div className="p-4">
-        <p className="truncate text-xs text-sidebar-foreground/50">
+      <Separator className="relative bg-white/10" />
+      <div className="relative p-4">
+        <p className="truncate text-xs text-white/45">
           Multi-tenant · {companyName}
         </p>
       </div>

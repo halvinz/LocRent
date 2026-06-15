@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { StaffPermission, UserRole } from "@prisma/client";
+import { ModernBackground } from "@/components/shared/modern-background";
 import { AdminSidebar } from "./admin-sidebar";
 import { AdminTopbar } from "./admin-topbar";
 import { AdminMobileNav } from "./admin-mobile-nav";
@@ -27,7 +28,7 @@ export function AdminLayoutClient({
   const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="relative flex min-h-screen">
       <AdminSidebar
         userRole={user.role}
         permissions={user.permissions}
@@ -40,14 +41,17 @@ export function AdminLayoutClient({
         permissions={user.permissions}
         companyName={companyName}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        <ModernBackground variant="admin" />
         <AdminTopbar
           user={user}
           companyName={companyName}
           mobileNavOpen={mobileNavOpen}
           onMenuClick={() => setMobileNavOpen((prev) => !prev)}
         />
-        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
+        <main className="relative z-10 flex-1 overflow-auto p-4 sm:p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

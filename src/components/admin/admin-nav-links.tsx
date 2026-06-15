@@ -46,10 +46,10 @@ export function AdminNavLinks({
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
               isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                ? "bg-[#1e3a5f] text-white shadow-md shadow-black/20"
+                : "text-white/75 hover:bg-white/10 hover:text-white",
             )}
           >
             <item.icon className="h-4 w-4 shrink-0" />

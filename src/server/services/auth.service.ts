@@ -1,8 +1,75 @@
+import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
-import { verifyPassword, createSessionToken } from "@/lib/auth";
-import type { LoginInput } from "@/lib/validations/auth";
+import { verifyPassword, createSessionToken, hashPassword } from "@/lib/auth";
+import { slugify } from "@/lib/utils";
+import type { LoginInput, RegisterCompanyInput } from "@/lib/validations/auth";
 import type { SessionUser } from "@/types/auth";
-import { UnauthorizedError } from "@/lib/errors";
+import { ConflictError, UnauthorizedError } from "@/lib/errors";
+
+async function generateUniqueCompanySlug(name: string): Promise<string> {
+  const base = slugify(name) || "agence";
+  let candidate = base;
+  let suffix = 0;
+
+  while (true) {
+    const existing = await prisma.company.findUnique({
+      where: { slug: candidate },
+      select: { id: true },
+    });
+    if (!existing) return candidate;
+    suffix += 1;
+    candidate = `${base}-${suffix}`;
+  }
+}
+
+export async function registerCompanyAdmin(
+  input: RegisterCompanyInput,
+): Promise<SessionUser> {
+  const email = input.email.toLowerCase().trim();
+
+  const existingUser = await prisma.user.findFirst({
+    where: { email },
+    select: { id: true },
+  });
+
+  if (existingUser) {
+    throw new ConflictError("Cet email est déjà utilisé");
+  }
+
+  const slug = await generateUniqueCompanySlug(input.companyName);
+  const passwordHash = await hashPassword(input.password);
+
+  const user = await prisma.$transaction(async (tx) => {
+    const company = await tx.company.create({
+      data: {
+        name: input.companyName.trim(),
+        slug,
+        email,
+      },
+    });
+
+    return tx.user.create({
+      data: {
+        companyId: company.id,
+        email,
+        passwordHash,
+        firstName: "Admin",
+        lastName: input.companyName.trim().slice(0, 80),
+        role: UserRole.ADMIN,
+        permissions: [],
+      },
+    });
+  });
+
+  return {
+    id: user.id,
+    companyId: user.companyId,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+  };
+}
 
 export async function authenticateUser(input: LoginInput): Promise<SessionUser> {
   const user = await prisma.user.findFirst({

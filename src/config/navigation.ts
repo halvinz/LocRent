@@ -63,4 +63,4 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "FleetRent";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "LocRent";

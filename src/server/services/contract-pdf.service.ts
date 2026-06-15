@@ -139,7 +139,7 @@ export async function generateContractPdf(
   y -= 30;
   line("_____________________          _____________________", false, 10);
   y -= 20;
-  line(`Document genere le ${formatPdfDate(new Date())} — FleetRent`, false, 8);
+  line(`Document genere le ${formatPdfDate(new Date())} — LocRent`, false, 8);
 
   const bytes = await pdfDoc.save();
   return Buffer.from(bytes);

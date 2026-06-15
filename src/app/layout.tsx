@@ -12,8 +12,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "FleetRent",
-    template: "%s | FleetRent",
+    default: "LocRent",
+    template: "%s | LocRent",
   },
   description:
     "Plateforme SaaS B2B de gestion pour agences de location de véhicules",
