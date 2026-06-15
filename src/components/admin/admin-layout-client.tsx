@@ -28,7 +28,7 @@ export function AdminLayoutClient({
   const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
 
   return (
-    <div className="relative flex min-h-screen">
+    <div className="relative flex min-h-dvh w-full max-w-[100vw] overflow-x-hidden">
       <AdminSidebar
         userRole={user.role}
         permissions={user.permissions}
@@ -49,7 +49,7 @@ export function AdminLayoutClient({
           mobileNavOpen={mobileNavOpen}
           onMenuClick={() => setMobileNavOpen((prev) => !prev)}
         />
-        <main className="relative z-10 flex-1 overflow-auto p-4 sm:p-6">
+        <main className="relative z-10 flex-1 overflow-x-hidden overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
           {children}
         </main>
       </div>

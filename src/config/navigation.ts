@@ -3,6 +3,7 @@ import {
   Users,
   Car,
   FileText,
+  CalendarCheck,
   ClipboardCheck,
   AlertTriangle,
   Settings,
@@ -12,7 +13,7 @@ import { StaffPermission } from "@prisma/client";
 
 export interface NavItem {
   title: string;
-  href: "/dashboard" | "/dashboard/clients" | "/dashboard/vehicles" | "/dashboard/contracts" | "/dashboard/inspections" | "/dashboard/fines" | "/dashboard/settings";
+  href: "/dashboard" | "/dashboard/clients" | "/dashboard/vehicles" | "/dashboard/contracts" | "/dashboard/reservations" | "/dashboard/inspections" | "/dashboard/fines" | "/dashboard/settings";
   icon: LucideIcon;
   adminOnly?: boolean;
   /** Required for staff (admin always sees all). */
@@ -44,6 +45,12 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     permission: StaffPermission.CONTRACTS,
   },
   {
+    title: "Réservations",
+    href: "/dashboard/reservations",
+    icon: CalendarCheck,
+    permission: StaffPermission.RESERVATIONS,
+  },
+  {
     title: "États des lieux",
     href: "/dashboard/inspections",
     icon: ClipboardCheck,
@@ -64,3 +71,12 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
 ];
 
 export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "LocRent";
+
+export const RESERVATIONS_PATH = "/dashboard/reservations";
+
+export function isReservationsFocusedPath(pathname: string): boolean {
+  return (
+    pathname === RESERVATIONS_PATH ||
+    pathname.startsWith(`${RESERVATIONS_PATH}/`)
+  );
+}

@@ -5,13 +5,33 @@ import { usePathname } from "next/navigation";
 import { StaffPermission, UserRole } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { hasAnyPermission } from "@/lib/permissions";
-import { ADMIN_NAV_ITEMS } from "@/config/navigation";
+import {
+  ADMIN_NAV_ITEMS,
+  isReservationsFocusedPath,
+  RESERVATIONS_PATH,
+} from "@/config/navigation";
+import { ReservationsSidebarList } from "./reservations-sidebar-list";
 
 interface AdminNavLinksProps {
   userRole: UserRole;
   permissions: StaffPermission[];
   onNavigate?: () => void;
   className?: string;
+}
+
+function filterNavItems(
+  userRole: UserRole,
+  permissions: StaffPermission[],
+) {
+  return ADMIN_NAV_ITEMS.filter((item) => {
+    if (item.adminOnly && userRole !== UserRole.ADMIN) return false;
+    if (userRole === UserRole.ADMIN) return true;
+    if (!item.permission) return true;
+    const required = Array.isArray(item.permission)
+      ? item.permission
+      : [item.permission];
+    return hasAnyPermission({ role: userRole, permissions }, required);
+  });
 }
 
 export function AdminNavLinks({
@@ -21,20 +41,22 @@ export function AdminNavLinks({
   className,
 }: AdminNavLinksProps) {
   const pathname = usePathname();
+  const focusedReservations = isReservationsFocusedPath(pathname);
+  const navItems = filterNavItems(userRole, permissions);
 
-  const navItems = ADMIN_NAV_ITEMS.filter((item) => {
-    if (item.adminOnly && userRole !== UserRole.ADMIN) return false;
-    if (userRole === UserRole.ADMIN) return true;
-    if (!item.permission) return true;
-    const required = Array.isArray(item.permission)
-      ? item.permission
-      : [item.permission];
-    return hasAnyPermission({ role: userRole, permissions }, required);
-  });
+  const visibleItems = focusedReservations
+    ? navItems.filter((item) => item.href === RESERVATIONS_PATH)
+    : navItems;
 
   return (
-    <nav className={cn("flex flex-col gap-1", className)}>
-      {navItems.map((item) => {
+    <nav
+      className={cn(
+        "flex flex-col gap-1",
+        focusedReservations && "h-full min-h-0",
+        className,
+      )}
+    >
+      {visibleItems.map((item) => {
         const isActive =
           item.href === "/dashboard"
             ? pathname === "/dashboard"
@@ -57,6 +79,10 @@ export function AdminNavLinks({
           </Link>
         );
       })}
+
+      {focusedReservations && (
+        <ReservationsSidebarList onNavigate={onNavigate} />
+      )}
     </nav>
   );
 }

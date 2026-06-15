@@ -18,12 +18,12 @@ export function AuthCard({
   return (
     <div
       className={cn(
-        "w-full max-w-md rounded-2xl border border-white/40 bg-white/85 p-8 shadow-2xl backdrop-blur-md",
+        "w-full rounded-2xl border border-white/40 bg-white/90 p-5 shadow-2xl backdrop-blur-md sm:p-8",
         className,
       )}
     >
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
           {title}
         </h1>
         <p className="mt-2 text-sm text-slate-600">{subtitle}</p>
@@ -68,7 +68,7 @@ function AuthField({
           type={type}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="flex h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+          className="flex h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-base shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 sm:text-sm"
         />
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}

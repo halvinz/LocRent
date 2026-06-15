@@ -5,6 +5,7 @@ import {
   VehicleStatus,
   RentalContractStatus,
   FineStatus,
+  ReservationStatus,
 } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth/password";
 import { normalizeLicensePlate } from "../src/config/fines";
@@ -27,7 +28,7 @@ async function main() {
   const adminPassword = await hashPassword("Admin123!");
   const staffPassword = await hashPassword("Staff123!");
 
-  await prisma.user.upsert({
+  const adminUser = await prisma.user.upsert({
     where: {
       companyId_email: {
         companyId: company.id,
@@ -45,7 +46,7 @@ async function main() {
     },
   });
 
-  await prisma.user.upsert({
+  const staffUser = await prisma.user.upsert({
     where: {
       companyId_email: {
         companyId: company.id,
@@ -56,6 +57,7 @@ async function main() {
       permissions: [
         StaffPermission.CLIENTS,
         StaffPermission.CONTRACTS,
+        StaffPermission.RESERVATIONS,
         StaffPermission.INSPECTIONS,
       ],
     },
@@ -69,6 +71,7 @@ async function main() {
       permissions: [
         StaffPermission.CLIENTS,
         StaffPermission.CONTRACTS,
+        StaffPermission.RESERVATIONS,
         StaffPermission.INSPECTIONS,
       ],
     },
@@ -305,6 +308,39 @@ async function main() {
   console.log("  Vehicles:", plate1, plate2);
   console.log("  Contracts: LOC-2026-001 (active), LOC-2026-002, LOC-2025-089");
   console.log("  Fines: 1 matched, 1 new (unmatched)");
+
+  await prisma.reservation.upsert({
+    where: { id: "seed-reservation-1" },
+    update: {},
+      create: {
+      id: "seed-reservation-1",
+      companyId: company.id,
+      bookedById: staffUser.id,
+      guestName: "Lucas Petit",
+      phone: "06 98 76 54 32",
+      depositAmount: 150,
+      status: ReservationStatus.ACTIVE,
+      vehicleId: vehicle2.id,
+      notes: "Réservation week-end prochain",
+    },
+  });
+
+  await prisma.reservation.upsert({
+    where: { id: "seed-reservation-2" },
+    update: {},
+    create: {
+      id: "seed-reservation-2",
+      companyId: company.id,
+      bookedById: adminUser.id,
+      guestName: "Emma Durand",
+      snapchat: "emma.durand",
+      depositAmount: 200,
+      status: ReservationStatus.ACTIVE,
+      vehicleId: vehicle1.id,
+    },
+  });
+
+  console.log("  Reservations: 2 sample entries");
 }
 
 main()

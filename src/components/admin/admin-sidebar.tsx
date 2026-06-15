@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Car } from "lucide-react";
 import { StaffPermission, UserRole } from "@prisma/client";
-import { APP_NAME } from "@/config/navigation";
+import { APP_NAME, isReservationsFocusedPath } from "@/config/navigation";
 import { AdminNavLinks } from "./admin-nav-links";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -18,6 +20,9 @@ export function AdminSidebar({
   permissions,
   companyName,
 }: AdminSidebarProps) {
+  const pathname = usePathname();
+  const focusedReservations = isReservationsFocusedPath(pathname);
+
   return (
     <aside className="relative z-20 hidden w-64 shrink-0 flex-col overflow-hidden border-r border-[#1e3a5f]/30 bg-[#0c2340] text-sidebar-foreground lg:flex">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#1e3a5f]/20 via-transparent to-slate-950/40" />
@@ -33,15 +38,24 @@ export function AdminSidebar({
         </div>
       </div>
 
-      <ScrollArea className="relative flex-1 px-3 py-4">
+      <ScrollArea className="relative flex min-h-0 flex-1 flex-col px-3 py-4">
         <AdminNavLinks userRole={userRole} permissions={permissions} />
       </ScrollArea>
 
       <Separator className="relative bg-white/10" />
       <div className="relative p-4">
-        <p className="truncate text-xs text-white/45">
-          Multi-tenant · {companyName}
-        </p>
+        {focusedReservations ? (
+          <Link
+            href="/dashboard"
+            className="block text-center text-xs font-medium text-white/70 transition-colors hover:text-white"
+          >
+            ← Retour au tableau de bord
+          </Link>
+        ) : (
+          <p className="truncate text-xs text-white/45">
+            Multi-tenant · {companyName}
+          </p>
+        )}
       </div>
     </aside>
   );

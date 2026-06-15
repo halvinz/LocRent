@@ -14,13 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/shared/searchable-select";
 import {
   Card,
   CardContent,
@@ -98,6 +92,18 @@ export function ContractForm({
     }
   }
 
+  const clientOptions = clients.map((client) => ({
+    value: client.id,
+    label: `${client.lastName} ${client.firstName}`,
+    searchText: `${client.firstName} ${client.lastName} ${client.lastName}`,
+  }));
+
+  const vehicleOptions = vehicles.map((vehicle) => ({
+    value: vehicle.id,
+    label: `${vehicle.licensePlate} — ${vehicle.make} ${vehicle.model} (${VEHICLE_STATUS_LABELS[vehicle.status]})`,
+    searchText: `${vehicle.licensePlate} ${vehicle.make} ${vehicle.model} ${VEHICLE_STATUS_LABELS[vehicle.status]}`,
+  }));
+
   async function onSubmit(data: ContractFormValues) {
     const parsed = contractFormSchema.safeParse(data);
     if (!parsed.success) {
@@ -148,21 +154,14 @@ export function ContractForm({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <Select
+                <SearchableSelect
+                  options={clientOptions}
                   value={field.value || undefined}
                   onValueChange={field.onChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.lastName} {c.firstName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Sélectionner un client"
+                  searchPlaceholder="Nom, prénom…"
+                  emptyMessage="Aucun client trouvé"
+                />
               )}
             />
             {errors.clientId && <p className="text-sm text-destructive">{errors.clientId.message}</p>}
@@ -174,24 +173,17 @@ export function ContractForm({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <Select
+                <SearchableSelect
+                  options={vehicleOptions}
                   value={field.value || undefined}
-                  onValueChange={(v) => {
-                    field.onChange(v);
-                    onVehicleChange(v);
+                  onValueChange={(vehicleId) => {
+                    field.onChange(vehicleId);
+                    onVehicleChange(vehicleId);
                   }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un véhicule" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {vehicles.map((v) => (
-                      <SelectItem key={v.id} value={v.id}>
-                        {v.licensePlate} — {v.make} {v.model} ({VEHICLE_STATUS_LABELS[v.status]})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Sélectionner un véhicule"
+                  searchPlaceholder="Plaque, marque, modèle…"
+                  emptyMessage="Aucun véhicule trouvé"
+                />
               )}
             />
             {errors.vehicleId && <p className="text-sm text-destructive">{errors.vehicleId.message}</p>}

@@ -95,6 +95,7 @@ export function AdminMobileNav({
             userRole={userRole}
             permissions={permissions}
             onNavigate={onClose}
+            className="min-h-full"
           />
         </div>
 

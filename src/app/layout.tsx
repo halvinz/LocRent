@@ -8,6 +8,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -25,8 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
-      <body className={inter.className}>{children}</body>
+    <html lang="fr" className="h-full overflow-x-hidden">
+      <body className={`${inter.className} min-h-full overflow-x-hidden antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

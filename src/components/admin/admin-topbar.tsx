@@ -38,7 +38,7 @@ export function AdminTopbar({
   const initials = getInitials(user.firstName, user.lastName);
 
   return (
-    <header className="glass-panel relative z-20 flex h-14 shrink-0 items-center justify-between gap-3 px-4 sm:h-16 sm:px-6">
+    <header className="glass-panel relative z-20 flex min-h-14 shrink-0 items-center justify-between gap-3 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:min-h-16 sm:px-6 sm:pb-0 sm:pt-0">
       <div className="flex min-w-0 items-center gap-3">
         <Button
           type="button"
